@@ -1,3 +1,5 @@
+name: saltyhana-db
+
 services:
   postgres:
     image: 'postgres:latest'
