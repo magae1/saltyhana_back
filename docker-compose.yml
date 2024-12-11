@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=saltyhanadb'
+      - 'POSTGRES_PASSWORD=hana'
+      - 'POSTGRES_USER=salty'
+    ports:
+      - '33333:5432'
