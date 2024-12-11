@@ -1,0 +1,8 @@
+#!/bin/bash
+branch="$(git branch --show-current)"
+commits="$(git rev-list --all)"
+
+if [ "$branch" = "main" ] && [ "$commits" != "" ]; then
+  echo "Stop! Commit on main branch is blocked."
+  exit 1
+fi
