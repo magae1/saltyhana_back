@@ -1,10 +1,10 @@
 package com.saltyhana.saltyhanaserver.dto;
 
 
-import com.saltyhana.saltyhanaserver.enums.ProductType;
+import com.saltyhana.saltyhanaserver.enums.ProductEnum;
 
 public class RecommendResponseDTO {
-    private ProductType type;       // "asset" - 0 | "tendency" - 1 (자산 기반 추천인지 성향 테스트 기반 추천인지)
+    private ProductEnum type;       // "asset" - 0 | "tendency" - 1 (자산 기반 추천인지 성향 테스트 기반 추천인지)
     private String title;
     private String subTitle;
     private String imageUrl;
