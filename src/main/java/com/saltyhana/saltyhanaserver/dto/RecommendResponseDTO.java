@@ -8,5 +8,5 @@ public class RecommendResponseDTO {
     private String imageUrl;    // 카드 안에 들어갈 로고 이미지
     private String description;
 
-    private String tendency     // 성향 테스트 결과 (String | null)
+    private String tendency     // 성향 테스트 결과 (String || null)
 }
