@@ -1,5 +1,7 @@
 package com.saltyhana.saltyhanaserver.entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -36,4 +38,7 @@ public class User {
     private String email;
 
     private String profileImage;
+
+    @Column(nullable = false)
+    private LocalDate birth;
 }
