@@ -16,5 +16,4 @@ public class RecommendResponseDTO {
 
     private String tendency;    // String | null   (차분하고 어쩌고) | (테스트 전)
 
-
 }
