@@ -14,9 +14,9 @@ jobs:
       - name: Notify on PR request
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_CHANNEL_ID: ${{ secrets.MY_SLACK_CHANNEL_ID }}
+          SLACK_ICON: ${{ secrets.SLACK_ICON }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{
-            "text": "Pull Request 요청: <!channel> PR: '${{ github.event.pull_request.title }}' by ${{
-            github.event.pull_request.user.login }}\n${{ github.event.pull_request.html_url }}",
-            "channel": "@정중일"
-          }' $SLACK_WEBHOOK_URL
+          curl -X POST --data-urlencode "payload={\"channel\": \"$SLACK_CHANNEL_ID\",
+          \"text\": \"New PR: <${{ github.event.pull_request.title }}|${{ github.event.pull_request.html_url }}> by ${{ github.event.pull_request.user.login }}.\",
+          \"icon_emoji\": \":$SLACK_ICON:\"}" $SLACK_WEBHOOK_URL
