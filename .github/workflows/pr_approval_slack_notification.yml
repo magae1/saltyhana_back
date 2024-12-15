@@ -1,0 +1,24 @@
+name: Slack Notification for PR Approval
+
+on:
+  pull_request_review:
+    types:
+      - submitted
+
+jobs:
+  slack_notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Notify on PR approval
+        if: github.event.review.state == 'approved'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "Pull Request 승인 완료: <!channel> PR: '${{ github.event.pull_request.title }}' by ${{
+            github.event.pull_request.user.login }}\n${{ github.event.pull_request.html_url }}",
+            "icon_emoji": ":모모티콘:"
+          }' $SLACK_WEBHOOK_URL
