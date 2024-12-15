@@ -2,7 +2,11 @@ package com.saltyhana.saltyhanaserver.dto;
 
 
 import com.saltyhana.saltyhanaserver.enums.ProductEnum;
+import lombok.Builder;
+import lombok.Data;
 
+@Builder
+@Data
 public class RecommendResponseDTO {
     private ProductEnum type;       // "asset" - 0 | "tendency" - 1 (자산 기반 추천인지 성향 테스트 기반 추천인지)
     private String title;
