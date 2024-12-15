@@ -1,0 +1,20 @@
+name: Slack Notification for PR Review
+
+on:
+  pull_request_review:
+    types: [edited, submitted, dismissed]
+
+jobs:
+  slack_notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Notify on PR Review
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_ICON: ${{ secrets.SLACK_ICON }}
+        run: |
+          curl -d '{"text": "PR ${{ github.event.review.state == 'approved' && '승인' || '재검토' }}: <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> by ${{ github.event.pull_request.user.login }}", "icon_emoji": ":$SLACK_ICON:"}' \
+          -X POST \
+          $SLACK_WEB_HOOK_URL
