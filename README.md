@@ -26,18 +26,28 @@
    3. 커밋 메시지 수정 이후 `START REBASING` 클릭
       ![squash3](/dev/images/squash3.png)
    > 단, 작업 중인 feature 브랜치에서만 하셔야 합니다.
-
-4. 개발이 끝나면 원격 레포지토리에 푸시
+4. (선택) 작업 중인 기능 브랜치가 develop의 최신 상태를 반영하게 하고 싶으면 rebase를 이용하세요.
+   > rebase는 base를 재설정하는 명령어입니다. 여기서 base는 브랜치가 뻗어나온 커밋을 말합니다.
+   
+   - 현재 브랜치를 develop 브랜치에 rebase하기
+     ```shell
+     git rebase develop 
+     ```
+   - 특정 브랜치를 다른 브랜치에 rebase하기
+     ```
+     git rebase <다른 브랜치명> <특정 브랜치명>
+     ```
+5. 개발이 끝나면 원격 레포지토리에 푸시
    - 브랜치가 원격 레포지토리에 올라간 적 없다면,
      ```shell
-     git push --set-upstream
+     git push --set-upstream origin <브랜치명>
      ```
    - 브랜치가 원격 레포지토리에 올라가 있다면,
      ```shell
-     git push
+     git push origin <브랜치명>
      ```
-5. 이후, PR을 작성
-6. PR이 승인되면 작업들을 develop 브랜치에 반영
+6. 이후, PR을 작성
+7. PR이 승인되면 작업들을 develop 브랜치에 반영
    1. 로컬 develop 브랜치 최신화(원격 레포지토리로부터 풀)
       ```shell
       git pull origin develop
