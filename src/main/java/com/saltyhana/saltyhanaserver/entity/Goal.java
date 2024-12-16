@@ -47,8 +47,10 @@ public class Goal {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String icon;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Icon icon;
+
+    private String customImage;
 
     @Column(nullable = false)
     private String category;
