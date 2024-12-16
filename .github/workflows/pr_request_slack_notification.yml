@@ -17,6 +17,6 @@ jobs:
           SLACK_CHANNEL_ID: ${{ secrets.MY_SLACK_CHANNEL_ID }}
           SLACK_ICON: ${{ secrets.SLACK_ICON }}
         run: |
-          curl -d '{"text": "PR <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> by ${{ github.event.pull_request.user.login }}", "icon_emoji": ":$SLACK_ICON:", "channel": "$SLACK_CHANNEL"}' \
+          curl -d '{"text": "PR <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> by ${{ github.event.pull_request.user.login }}", "icon_emoji": ":$SLACK_ICON:", "channel": "SLACK_CHANNEL_ID"}' \
           -X POST \
           $SLACK_WEBHOOK_URL
