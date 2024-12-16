@@ -1,5 +1,6 @@
 package com.saltyhana.saltyhanaserver.service;
 
+import com.saltyhana.saltyhanaserver.dto.AccountDTO;
 import com.saltyhana.saltyhanaserver.dto.TransferDTO;
 import com.saltyhana.saltyhanaserver.entity.Account;
 import com.saltyhana.saltyhanaserver.repository.TransferRepository;
@@ -13,7 +14,7 @@ import static com.saltyhana.saltyhanaserver.util.StringFormatter.toLocalDateTime
 
 @Service
 public class TransferService {
-
+    @Autowired
     private final TransferRepository transferRepository;
 
     @Autowired
@@ -26,24 +27,20 @@ public class TransferService {
         LocalDateTime startDate = localDateTimes.get(0);
         LocalDateTime endDate = localDateTimes.get(1);
 
-        System.out.println("accountID: " + accountId);
-        System.out.println("startDate: " + startDate);
-        System.out.println("endDate: " + startDate);
-
         // 일일 거래 내역과 일일 잔액을 가져온다
         List<Object[]> dailyTransactions = transferRepository.findDailyTransactions(accountId, startDate, endDate);
         List<Object[]> dailyBalance = transferRepository.findDailyBalance(accountId, startDate, endDate);
 
         // 날짜별로 입금, 출금, 잔액을 기록하기 위한 맵
-        Map<String, Integer> totalDepositMap = new HashMap<>();
-        Map<String, Integer> totalWithdrawalMap = new HashMap<>();
+        Map<String, Long> totalDepositMap = new HashMap<>();
+        Map<String, Long> totalWithdrawalMap = new HashMap<>();
         Map<String, Integer> balanceMap = new HashMap<>();
 
         // 거래 내역을 바탕으로 입금액과 출금액을 구한다
         for (Object[] transaction : dailyTransactions) {
-            String date = (String) transaction[0];
-            Integer totalDeposit = (Integer) transaction[1];
-            Integer totalWithdrawal = (Integer) transaction[2];
+            String date = transaction[0].toString().split("T")[0];
+            Long totalDeposit = (Long) transaction[1];
+            Long totalWithdrawal = (Long) transaction[2];
 
             totalDepositMap.put(date, totalDeposit);
             totalWithdrawalMap.put(date, totalWithdrawal);
@@ -51,7 +48,7 @@ public class TransferService {
 
         // 일일 잔액을 맵에 저장 (최신 잔액으로 업데이트)
         for (Object[] balance : dailyBalance) {
-            String date = (String) balance[0];
+            String date = balance[0].toString().split("T")[0];
             Integer afterBalanceAmt = (Integer) balance[1];
             balanceMap.put(date, afterBalanceAmt);
         }
@@ -62,8 +59,8 @@ public class TransferService {
         // 날짜별로 잔액, 입금액, 출금액을 결합
         for (String date : balanceMap.keySet()) {
             Integer balance = balanceMap.get(date);
-            Integer totalDeposit = totalDepositMap.getOrDefault(date, 0);
-            Integer totalWithdrawal = totalWithdrawalMap.getOrDefault(date, 0);
+            Long totalDeposit = totalDepositMap.getOrDefault(date, 0L);
+            Long totalWithdrawal = totalWithdrawalMap.getOrDefault(date, 0L);
 
             TransferDTO dto = new TransferDTO(date, balance, totalDeposit, totalWithdrawal);
             transferList.add(dto);

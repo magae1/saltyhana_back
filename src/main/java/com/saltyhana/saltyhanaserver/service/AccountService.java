@@ -6,12 +6,18 @@ import com.saltyhana.saltyhanaserver.dto.TransferDTO;
 import com.saltyhana.saltyhanaserver.dto.AccountDTO;
 import com.saltyhana.saltyhanaserver.repository.AccountRepository;
 import com.saltyhana.saltyhanaserver.util.StringFormatter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class AccountService {
+    @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
     private TransferService transferService;
 
     public List<AccountResponseDTO> getAccountTransactions(AccountRequestDTO accountRequestDTO) {
@@ -23,11 +29,7 @@ public class AccountService {
 
         List<AccountResponseDTO> accountResponse = new ArrayList<>();
 
-        System.out.println("userId: " + userId);
-        System.out.println("startDate: " + startDate);
-        System.out.println("endDate: " + startDate);
-
-        accounts.forEach(account -> {
+        accounts.forEach( account -> {
             List<TransferDTO> transferList = transferService.getDailyTransactions(
                     account.getId(),
                     startDate,

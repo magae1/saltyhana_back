@@ -4,10 +4,12 @@ import com.saltyhana.saltyhanaserver.entity.Transfer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Repository
 public interface TransferRepository extends JpaRepository<Transfer, Long> {
     // 일일 입출금 내역을 가져오는 쿼리
     @Query("SELECT FUNCTION('DATE', t.tranTime) as date, " +  // 여기서 'DATE'는 데이터베이스에서 지원되는 날짜 추출 함수입니다.

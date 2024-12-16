@@ -26,12 +26,12 @@ import lombok.Data;
 public class TransferDTO {
     private String date;
     private Integer balance;
-    private Integer totalDeposit;
-    private Integer totalWithdrawal;
+    private Long totalDeposit;
+    private Long totalWithdrawal;
 
     // 생성자, getter, setter 생략
 
-    public TransferDTO(String date, Integer balance, Integer totalDeposit, Integer totalWithdrawal) {
+    public TransferDTO(String date, Integer balance, Long totalDeposit, Long totalWithdrawal) {
         this.date = date;
         this.balance = balance;
         this.totalDeposit = totalDeposit;
