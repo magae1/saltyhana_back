@@ -25,14 +25,18 @@ pipeline {
 
     post {
         success {
-            def res = slackSend(channel: '#짭짤하나', color: 'good', message: "스프링 배포 성공")
-            res.addReaction('돼지')
-            res.addReaction('진행시켜')
+            script {
+                def res = slackSend(channel: '#짭짤하나', color: 'good', message: "스프링 배포 성공!")
+                res.addReaction('pig')
+                res.addReaction('진행시켜')
+            }
         }
         failure {
-            def userId = slackUserIdFromEmail("$EMAIL")
-            def res = slackSend(channel: '#짭짤하나', color: 'danger', message: "스프링 배포 실패 <@userId>")
-            res.addReaction('비상')
+            script {
+                def userId = slackUserIdFromEmail("$EMAIL")
+                def res = slackSend(channel: '#짭짤하나', color: 'danger', message: "스프링 배포 실패! <@$userId>")
+                res.addReaction('비상')
+            }
         }
     }
 }
