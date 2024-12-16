@@ -23,7 +23,7 @@ public class JWTProviderTest {
         String token = JWTProvider.generateAccessToken(claims, now);
 
         assertDoesNotThrow(() -> {
-            Map<String, ?> result = JWTProvider.parseClaims(token);
+            Map<String, ?> result = JWTProvider.parseAccessToken(token);
             assertEquals(claims.get("username"), result.get("username"));
             assertEquals(claims.get("id"), result.get("id"));
         });
@@ -37,7 +37,7 @@ public class JWTProviderTest {
         Date old = new Date(now.getTime() - (JWTProvider.ACCESS_TOKEN_EXPIRATION_INTERVAL + 1));
         String token = JWTProvider.generateAccessToken(claims, old);
         assertThrows(InvalidJWTException.class, () -> {
-            JWTProvider.parseClaims(token);
+            JWTProvider.parseAccessToken(token);
         });
     }
 
@@ -46,7 +46,17 @@ public class JWTProviderTest {
     public void testInvalidAccessToken() {
         String token = "1231231223123";
         assertThrows(InvalidJWTException.class, () -> {
-            JWTProvider.parseClaims(token);
+            JWTProvider.parseAccessToken(token);
+        });
+    }
+
+    @Test
+    @DisplayName("잘못된 토큰 타입에 대한 테스트")
+    public void testWrongTokenType() {
+        Map<String, Object> claims = Map.of("id", 1);
+        String refreshToken = JWTProvider.generateRefreshToken(claims, new Date());
+        assertThrows(InvalidJWTException.class, () -> {
+            JWTProvider.parseAccessToken(refreshToken);
         });
     }
 }

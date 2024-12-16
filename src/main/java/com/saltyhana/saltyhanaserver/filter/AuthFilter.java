@@ -26,6 +26,10 @@ public class AuthFilter extends OncePerRequestFilter {
     //TODO: auth 구현 이후 필터 재설정
     @Override
     public boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
+            return true;
+        }
         return false;
     }
 
@@ -46,12 +50,12 @@ public class AuthFilter extends OncePerRequestFilter {
             }
 
             String accessToken = authenticationHeader.substring(7);
-            Map<String, ?> claims = JWTProvider.parseClaims(accessToken);
+            Map<String, ?> claims = JWTProvider.parseAccessToken(accessToken);
             String id = claims.get("id").toString();
             List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
             return Optional.of(new UsernamePasswordAuthenticationToken(id, accessToken, authorities));
         } catch (InvalidJWTException e) {
-            log.error(e);
+            log.warn(e);
         }
         return Optional.empty();
     }

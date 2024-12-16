@@ -37,14 +37,14 @@ public class AuthService {
             throw new WrongPasswordException();
         }
 
-        Map<String, ?> userClaims = Map.of("identifier", loginForm.getIdentifier(),
+        Map<String, Object> userClaims = Map.of("identifier", loginForm.getIdentifier(),
                 "id", user.getId());
         return generateTokenPair(userClaims);
     }
 
     public TokenPairResponseDTO refreshTokenPair(String oldRefreshToken) throws ResponseStatusException {
         try {
-            Map<String, ?> claims = JWTProvider.parseClaims(oldRefreshToken);
+            Map<String, ?> claims = JWTProvider.parseRefreshToken(oldRefreshToken);
             return generateTokenPair(claims);
         } catch (InvalidJWTException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST , e.getMessage());
@@ -61,7 +61,7 @@ public class AuthService {
         return savedUser.getId();
     }
 
-    private TokenPairResponseDTO generateTokenPair(Map<String,?> claims) {
+    private TokenPairResponseDTO generateTokenPair(Map<String, ?> claims) {
         Date now = new Date();
         String accessToken = JWTProvider.generateAccessToken(claims, now);
         String refreshToken = JWTProvider.generateRefreshToken(claims, now);
