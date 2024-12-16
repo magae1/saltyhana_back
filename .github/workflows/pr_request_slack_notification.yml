@@ -2,7 +2,7 @@ name: Slack Notification for PR Request
 
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, edited]
 
 jobs:
   slack_notification:
@@ -14,9 +14,7 @@ jobs:
       - name: Notify on PR request
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_CHANNEL_ID: ${{ secrets.MY_SLACK_CHANNEL_ID }}
-          SLACK_ICON: ${{ secrets.SLACK_ICON }}
         run: |
-          curl -d '{"text": "PR <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> by ${{ github.event.pull_request.user.login }}", "icon_emoji": ":$SLACK_ICON:", "channel": "SLACK_CHANNEL_ID"}' \
+          curl -d '{"text": "PR <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> by ${{ github.event.pull_request.user.login }}", "icon_emoji": "${{ secrets.SLACK_ICON }}", "channel": "${{ secrets.MY_SLACK_CHANNEL_ID }}"}' \
           -X POST \
           $SLACK_WEBHOOK_URL
