@@ -7,9 +7,9 @@ import java.util.List;
 
 @Data
 @Builder
-public class AssetResponseDTO {
+public class AccountResponseDTO {
     private String accountNumber;
-    private String accoutName;
+    private String accountAlias;
     private Integer accountBalance;
-    private List<List<Integer>> amountList;  // [0]: 일일 입금 총액, [1]: 일일 출금 총액, [2]: 일일 잔액
+    private List<TransferDTO> transferList;
 }

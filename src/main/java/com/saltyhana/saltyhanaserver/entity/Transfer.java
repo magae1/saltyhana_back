@@ -17,6 +17,7 @@ import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -34,14 +35,11 @@ public class Transfer {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Account account;
 
-    private Integer tranDate;
-    private Integer tranTime;
+    @Column(columnDefinition = "TIMESTAMP")  // TIMESTAMP로 명시
+    private LocalDateTime tranTime;
 
-    @Column(length = 8)
-    private String inoutType;
-
-    @Column(length = 10)
-    private String tranType;
+    @Column(length = 1)
+    private Integer inOutType;
 
     @Column(length = 20)
     private String printedContent;

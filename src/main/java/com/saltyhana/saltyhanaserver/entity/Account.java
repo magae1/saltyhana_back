@@ -50,4 +50,6 @@ public class Account {
 
     @Column(length = 1)
     private String accountType;
+
+    private Integer accountBalance;
 }
