@@ -19,4 +19,4 @@ jobs:
         run: |
           curl -d '{"text": "PR <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> by ${{ github.event.pull_request.user.login }}", "icon_emoji": ":$SLACK_ICON:", "channel": "$SLACK_CHANNEL"}' \
           -X POST \
-          $SLACK_WEB_HOOK_URL
+          $SLACK_WEBHOOK_URL
