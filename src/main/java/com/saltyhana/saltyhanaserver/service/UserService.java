@@ -35,7 +35,7 @@ public class UserService {
     @Transactional
     public MyPageResponseDTO updateUserInfo(String id, MyPageUpdateDTO updateDTO) {
         UserMyPage user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. "));
 
         // 이메일 중복 체크
         if (!user.getEmail().equals(updateDTO.getEmail()) &&
