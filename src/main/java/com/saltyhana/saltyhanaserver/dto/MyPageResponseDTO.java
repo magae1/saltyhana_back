@@ -10,9 +10,8 @@ import lombok.Data;
 @Builder
 public class MyPageResponseDTO {
     private String email;
-    private String id;
+    private String identifier;
     private String name;
     private LocalDate birth;
-    private String password;
     private String profileImg;
 }

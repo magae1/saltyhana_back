@@ -51,7 +51,7 @@ public class AuthFilter extends OncePerRequestFilter {
 
             String accessToken = authenticationHeader.substring(7);
             Map<String, ?> claims = JWTProvider.parseAccessToken(accessToken);
-            String id = claims.get("id").toString();
+            Long id = Long.parseLong(claims.get("id").toString());
             List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
             return Optional.of(new UsernamePasswordAuthenticationToken(id, accessToken, authorities));
         } catch (InvalidJWTException e) {

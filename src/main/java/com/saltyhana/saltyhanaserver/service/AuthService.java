@@ -11,9 +11,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.saltyhana.saltyhanaserver.dto.TokenPairResponseDTO;
+import com.saltyhana.saltyhanaserver.dto.form.EmailForm;
+import com.saltyhana.saltyhanaserver.dto.form.IdentifierForm;
 import com.saltyhana.saltyhanaserver.dto.form.LoginForm;
 import com.saltyhana.saltyhanaserver.dto.form.SignUpForm;
 import com.saltyhana.saltyhanaserver.entity.User;
+import com.saltyhana.saltyhanaserver.exception.AlreadyExistsException;
 import com.saltyhana.saltyhanaserver.exception.InvalidJWTException;
 import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.exception.WrongPasswordException;
@@ -58,6 +61,26 @@ public class AuthService {
         User user = UserMapper.toEntity(signUpForm, passwordEncoder.encode(signUpForm.getPassword()));
         User savedUser = userRepo.save(user);
         return savedUser.getId();
+    }
+
+    public void checkEmail(EmailForm emailForm) {
+        if (!checkEmailExists(emailForm.getEmail())) {
+            throw new AlreadyExistsException("이메일");
+        }
+    }
+
+    public void checkIdentifier(IdentifierForm identifierForm) {
+        if (!checkIdentifierExists(identifierForm.getIdentifier())) {
+            throw new AlreadyExistsException("아이디");
+        }
+    }
+
+    public boolean checkEmailExists(String email) {
+        return userRepo.existsByEmail(email);
+    }
+
+    public boolean checkIdentifierExists(String identifier) {
+        return userRepo.existsByIdentifier(identifier);
     }
 
     private TokenPairResponseDTO generateTokenPair(Map<String, ?> claims) {

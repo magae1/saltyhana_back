@@ -1,6 +1,8 @@
 package com.saltyhana.saltyhanaserver.mapper;
 
+import com.saltyhana.saltyhanaserver.dto.MyPageResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.UserDTO;
+import com.saltyhana.saltyhanaserver.dto.form.MyPageUpdateForm;
 import com.saltyhana.saltyhanaserver.dto.form.SignUpForm;
 import com.saltyhana.saltyhanaserver.entity.User;
 
@@ -28,6 +30,27 @@ public class UserMapper {
                 .build();
     }
 
+    public static User toEntity(Long id, MyPageUpdateForm myPageUpdateForm) {
+        User.UserBuilder builder = User.builder();
+        builder.id(id);
+        if (myPageUpdateForm.getEmail() != null) {
+            builder.email(myPageUpdateForm.getEmail());
+        }
+        if (myPageUpdateForm.getName() != null) {
+            builder.name(myPageUpdateForm.getName());
+        }
+        if (myPageUpdateForm.getIdentifier() != null) {
+            builder.identifier(myPageUpdateForm.getIdentifier());
+        }
+        if (myPageUpdateForm.getBirth() != null) {
+            builder.birth(myPageUpdateForm.getBirth());
+        }
+        if (myPageUpdateForm.getPassword() != null) {
+            builder.password(myPageUpdateForm.getPassword());
+        }
+        return builder.build();
+    }
+
     public static UserDTO toDTO(User user) {
         return UserDTO.builder()
                 .id(user.getId())
@@ -37,6 +60,16 @@ public class UserMapper {
                 .password(user.getPassword())
                 .birth(user.getBirth())
                 .profileImage(user.getProfileImage())
+                .build();
+    }
+
+    public static MyPageResponseDTO toMyPageResponseDTO(User user) {
+        return MyPageResponseDTO.builder()
+                .email(user.getEmail())
+                .name(user.getName())
+                .identifier(user.getIdentifier())
+                .birth(user.getBirth())
+                .profileImg(user.getProfileImage())
                 .build();
     }
 }

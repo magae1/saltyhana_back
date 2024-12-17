@@ -9,13 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.saltyhana.saltyhanaserver.dto.IdResponse;
 import com.saltyhana.saltyhanaserver.dto.IdResponse.IdResponseBuilder;
 import com.saltyhana.saltyhanaserver.dto.TokenPairResponseDTO;
+import com.saltyhana.saltyhanaserver.dto.form.EmailForm;
+import com.saltyhana.saltyhanaserver.dto.form.IdentifierForm;
 import com.saltyhana.saltyhanaserver.dto.form.LoginForm;
 import com.saltyhana.saltyhanaserver.dto.form.SignUpForm;
 import com.saltyhana.saltyhanaserver.dto.form.TokenRefreshForm;
 import com.saltyhana.saltyhanaserver.service.AuthService;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("${api_prefix}/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
@@ -35,5 +37,15 @@ public class AuthController {
         Long id = authService.signUp(signUpForm);
         IdResponseBuilder<Long> builder = IdResponse.builder();
         return builder.id(id).build();
+    }
+
+    @PostMapping("/check-identifier")
+    public void checkIdentifier(IdentifierForm identifierForm) {
+        authService.checkIdentifier(identifierForm);
+    }
+
+    @PostMapping("/check-email")
+    public void checkIdentifier(EmailForm emailForm) {
+        authService.checkEmail(emailForm);
     }
 }
