@@ -3,11 +3,13 @@ package com.saltyhana.saltyhanaserver.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,4 +45,7 @@ public class Product {
     private LocalDateTime dclsStrtDay;
     private LocalDateTime dclsEndDay;
     private LocalDateTime finCoSubmDay;
+
+    @ManyToMany(mappedBy = "recommendedProducts")
+    private Set<User> recommended;
 }

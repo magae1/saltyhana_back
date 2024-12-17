@@ -3,11 +3,11 @@ package com.saltyhana.saltyhanaserver.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,8 +15,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+
+import com.saltyhana.saltyhanaserver.enums.ConsumptionTypeEnum;
+import com.saltyhana.saltyhanaserver.enums.ConsumptionMBTIEnum;
 
 
 @Entity
@@ -28,13 +29,25 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConsumptionTendency {
     @Id
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private User user;
+    private Long id;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false, length = 10)
+    @Enumerated(EnumType.STRING)
+    private ConsumptionTypeEnum type;
+
+    @Column(nullable = false, length = 10)
+    @Enumerated(EnumType.STRING)
+    private ConsumptionMBTIEnum mbti;
 
     @Column(nullable = false)
     private Integer score;
+
+    @Column(nullable = false)
+    private String emoji;
 
     @Column(nullable = false)
     private String description;

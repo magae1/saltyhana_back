@@ -1,12 +1,9 @@
 package com.saltyhana.saltyhanaserver.entity;
 
 import java.time.LocalDate;
+import java.util.Set;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +11,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 
 @Entity(name = "uuser")
@@ -44,4 +43,16 @@ public class User {
 
     @Column(nullable = false)
     private LocalDate birth;
+
+    @ManyToMany
+    @JoinTable(
+            name = "recommended",
+            joinColumns = @JoinColumn(nullable = false, name = "user_id"),
+            inverseJoinColumns = @JoinColumn(nullable = false, name = "product_id")
+    )
+    Set<Product> recommendedProducts;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private ConsumptionTendency consumptionTendency;
 }
