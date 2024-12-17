@@ -17,6 +17,7 @@ public class CalendarService {
         this.calendarRepository = calendarRepository;
     }
 
+    // 특정 사용자(userId)의 모든 목표를 조회
     public List<CalendarResponseDTO> getAllCalendarGoals(Long userId) {
 
         return calendarRepository.findByUserId(userId).stream().map(goal -> {
@@ -32,4 +33,12 @@ public class CalendarService {
         }).toList();
     }
 
+    // 특정 목표(goalId) 삭제
+    public void deleteGoalById(Long userId, Long goalId) {
+        var goal = calendarRepository.findById(goalId).orElseThrow(() -> new IllegalArgumentException("Goal not found"));
+        if (!goal.getUser().getId().equals(userId)) {
+            throw new SecurityException("Unauthorized to delete this goal");
+        }
+        calendarRepository.delete(goal);
+    }
 }
