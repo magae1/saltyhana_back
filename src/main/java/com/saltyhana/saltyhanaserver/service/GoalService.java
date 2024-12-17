@@ -42,15 +42,15 @@ public class GoalService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
         // 3. 아이콘과 이미지 유효성 검사
-        if (goalDTO.getGoalIcon() != null && goalDTO.getGoalImg() != null) {
+        if (goalDTO.getIconId() != null && goalDTO.getGoalImg() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "아이콘과 이미지는 동시에 설정할 수 없습니다.");
         }
 
         // 4. 아이콘 조회 (있는 경우)
         Icon icon = null;
-        if (goalDTO.getGoalIcon() != null) {
+        if (goalDTO.getIconId() != null) {
             System.out.println("hello");
-            icon = iconRepository.findById(goalDTO.getGoalIcon())
+            icon = iconRepository.findById(goalDTO.getIconId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아이콘을 찾을 수 없습니다."));
         }
         System.out.println(icon);
@@ -61,12 +61,8 @@ public class GoalService {
                 .name(goalDTO.getGoalName())
                 .category(String.valueOf(goalDTO.getGoalType()))
                 .amount(Long.valueOf(goalDTO.getGoalMoney()))
-                .startAt(goalDTO.getStartDate().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime())
-                .endAt(goalDTO.getEndDate().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime())
+                .startAt(goalDTO.getStartDate().atStartOfDay())
+                .endAt(goalDTO.getEndDate().atStartOfDay())
                 .isEnded(false)
                 .icon(icon)
                 .customImage(goalDTO.getGoalImg())
@@ -79,12 +75,10 @@ public class GoalService {
         return SetGoalResponseDTO.builder()
                 .goalName(savedGoal.getName())
                 .goalMoney(savedGoal.getAmount().intValue())
-                .startDate(Date.from(savedGoal.getStartAt()
-                        .atZone(ZoneId.systemDefault()).toInstant()))
-                .endDate(Date.from(savedGoal.getEndAt()
-                        .atZone(ZoneId.systemDefault()).toInstant()))
+                .startDate(savedGoal.getStartAt().toLocalDate())
+                .endDate(savedGoal.getEndAt().toLocalDate())
                 .goalType(Integer.parseInt(savedGoal.getCategory()))
-                .goalIcon(savedGoal.getIcon() != null ? savedGoal.getIcon().getId() : null)
+                .iconId(savedGoal.getIcon() != null ? savedGoal.getIcon().getId() : null)
                 .goalImg(savedGoal.getCustomImage())
                 .build();
     }

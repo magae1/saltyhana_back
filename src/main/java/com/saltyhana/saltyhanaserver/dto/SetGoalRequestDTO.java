@@ -2,15 +2,16 @@ package com.saltyhana.saltyhanaserver.dto;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
 public class SetGoalRequestDTO {
     private String goalName;
     private Integer goalMoney;
-    private Date startDate;
-    private Date endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private Integer goalType;
-    private Long goalIcon;
-    private String goalImg;
+    private Long iconId;   //유저가 선택한 아이콘
+    private String goalImg;  //유저가 등록한 이미지
 }
