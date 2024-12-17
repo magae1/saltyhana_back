@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,19 +17,19 @@ import com.saltyhana.saltyhanaserver.entity.User;
 import com.saltyhana.saltyhanaserver.exception.InvalidJWTException;
 import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.exception.WrongPasswordException;
-import com.saltyhana.saltyhanaserver.mapper.AuthMapper;
+import com.saltyhana.saltyhanaserver.mapper.UserMapper;
 import com.saltyhana.saltyhanaserver.provider.JWTProvider;
-import com.saltyhana.saltyhanaserver.repository.UserAuthRepository;
+import com.saltyhana.saltyhanaserver.repository.UserRepository;
 
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final UserAuthRepository userAuthRepo;
+    private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
 
     public TokenPairResponseDTO generateTokenPairWithLoginForm(LoginForm loginForm) throws ResponseStatusException {
-        User user = userAuthRepo.findByIdentifier(loginForm.getIdentifier()).orElse(null);
+        User user = userRepo.findByIdentifier(loginForm.getIdentifier()).orElse(null);
         if (user == null) {
             throw new NotFoundException("사용자");
         } else if (!passwordEncoder.matches(loginForm.getPassword(), user.getPassword())) {
@@ -56,8 +55,8 @@ public class AuthService {
             throw new WrongPasswordException();
         }
 
-        User user = AuthMapper.toEntity(signUpForm, passwordEncoder.encode(signUpForm.getPassword()));
-        User savedUser = userAuthRepo.save(user);
+        User user = UserMapper.toEntity(signUpForm, passwordEncoder.encode(signUpForm.getPassword()));
+        User savedUser = userRepo.save(user);
         return savedUser.getId();
     }
 

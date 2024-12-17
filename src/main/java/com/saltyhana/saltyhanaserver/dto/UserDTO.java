@@ -8,11 +8,12 @@ import lombok.Data;
 
 @Data
 @Builder
-public class MyPageResponseDTO {
-    private String email;
-    private String id;
-    private String name;
-    private LocalDate birth;
+public class UserDTO {
+    private Long id;
+    private String identifier;
     private String password;
-    private String profileImg;
+    private String name;
+    private String email;
+    private String profileImage;
+    private LocalDate birth;
 }

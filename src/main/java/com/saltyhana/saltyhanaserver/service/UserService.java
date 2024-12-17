@@ -2,7 +2,7 @@ package com.saltyhana.saltyhanaserver.service;
 
 import com.saltyhana.saltyhanaserver.dto.MyPageResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.MyPageUpdateDTO;
-import com.saltyhana.saltyhanaserver.entity.UserMyPage;
+import com.saltyhana.saltyhanaserver.entity.User;
 import com.saltyhana.saltyhanaserver.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,25 +16,26 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /*
     // 사용자 정보 조회
     public MyPageResponseDTO getUserInfo(String id) {
-        UserMyPage user = userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         return MyPageResponseDTO.builder()
                 .email(user.getEmail())
-                .id(user.getId())
+                .id(user.getId().toString())
                 .name(user.getName())
                 .birth(user.getBirth())
                 .password(user.getPassword())
-                .profileImg(user.getProfileImg())
+                .profileImg(user.getProfileImage())
                 .build();
     }
 
     // 사용자 정보 수정
     @Transactional
     public MyPageResponseDTO updateUserInfo(String id, MyPageUpdateDTO updateDTO) {
-        UserMyPage user = userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         // 이메일 중복 체크
@@ -76,4 +77,6 @@ public class UserService {
                 .profileImg(user.getProfileImg())
                 .build();
     }
+
+     */
 }
