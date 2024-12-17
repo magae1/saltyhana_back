@@ -7,13 +7,15 @@ import java.util.List;
 
 public class StringFormatter {
 
-    // accountNumber를 "000-000000-00-000" 형식으로 변환하는 메서드
+    // accountNumber를 "000-000000-00000" 형식으로 변환하는 메서드
     public static String toAccountNumber(Long accountNumber) {
-            // accountNumber를 문자열로 변환 후 0을 채워서 포맷팅
-            return String.format("%03d-%06d-%05d",
-                    (accountNumber / 1000000000000L),        // 000 (앞 3자리)
-                    (accountNumber / 1000) % 1000000,         // 000000 (중간 6자리)
-                    accountNumber % 10);                      // 000 (마지막 5자리)
+        // accountNumber를 문자열로 변환 후 0을 채워서 포맷팅
+        String accountNumberStr = String.format("%014d", accountNumber); // 15자리로 맞춘 후
+
+        // 3개 구간으로 나누어 포맷팅
+        return accountNumberStr.substring(0, 3) + "-" +       // 앞 3자리
+                accountNumberStr.substring(3, 9) + "-" +       // 중간 6자리
+                accountNumberStr.substring(9, 14);             // 마지막 5자리
     }
 
     public static List<LocalDateTime> toLocalDateTime(String startDateString, String endDateString) {
