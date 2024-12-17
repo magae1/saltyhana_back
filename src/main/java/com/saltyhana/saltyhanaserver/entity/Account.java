@@ -15,6 +15,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -49,7 +50,9 @@ public class Account {
     private Long accountNum;
 
     @Column(length = 1)
+    @Comment("1: 수시입출금, 2: 예적금")
     private String accountType;
 
-    private Integer accountBalance;
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean main;
 }

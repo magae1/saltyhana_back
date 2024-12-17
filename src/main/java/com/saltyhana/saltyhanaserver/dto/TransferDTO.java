@@ -29,8 +29,6 @@ public class TransferDTO {
     private Long totalDeposit;
     private Long totalWithdrawal;
 
-    // 생성자, getter, setter 생략
-
     public TransferDTO(String date, Integer balance, Long totalDeposit, Long totalWithdrawal) {
         this.date = date;
         this.balance = balance;

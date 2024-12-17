@@ -1,8 +1,6 @@
 package com.saltyhana.saltyhanaserver.service;
 
-import com.saltyhana.saltyhanaserver.dto.AccountDTO;
 import com.saltyhana.saltyhanaserver.dto.TransferDTO;
-import com.saltyhana.saltyhanaserver.entity.Account;
 import com.saltyhana.saltyhanaserver.repository.TransferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
