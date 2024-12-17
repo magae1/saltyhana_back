@@ -42,7 +42,7 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
         WHERE t.tranTime >= :startAt 
         AND t.tranTime <= :endAt 
         AND t.account.id = :connectedAccountId 
-        AND t.inoutType = 0
+        AND t.inOutType = 0
     """)
     List<Transfer> findTransfersByAccountAndDateRange(
             @Param("startAt") LocalDateTime startAt,
