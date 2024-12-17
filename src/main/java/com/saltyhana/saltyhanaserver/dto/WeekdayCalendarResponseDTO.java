@@ -10,5 +10,4 @@ import java.util.List;
 @Builder
 public class WeekdayCalendarResponseDTO {
     private List<WeekDayType> weekday;
-    private LocalDateTime goalCompleteAt;
 }

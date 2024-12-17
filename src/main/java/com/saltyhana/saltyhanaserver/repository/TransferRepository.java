@@ -20,8 +20,8 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
             "AND t.tranTime BETWEEN :startDate AND :endDate " +
             "GROUP BY FUNCTION('DATE', t.tranTime)")  // 날짜만 그룹화
     List<Object[]> findDailyTransactions(@Param("accountId") Long accountId,
-                                         @Param("startDate") LocalDateTime startDate,
-                                         @Param("endDate") LocalDateTime endDate);
+                                         @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
 
     // 일일 잔액을 가져오는 쿼리
     @Query("SELECT FUNCTION('DATE', t.tranTime) as date, t.afterBalanceAmt " +
@@ -35,4 +35,18 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
     List<Object[]> findDailyBalance(@Param("accountId") Long accountId,
                                     @Param("startDate") LocalDateTime startDate,
                                     @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+        SELECT t 
+        FROM Transfer t 
+        WHERE t.tranTime >= :startAt 
+        AND t.tranTime <= :endAt 
+        AND t.account.id = :connectedAccountId 
+        AND t.inoutType = 0
+    """)
+    List<Transfer> findTransfersByAccountAndDateRange(
+            @Param("startAt") LocalDateTime startAt,
+            @Param("endAt") LocalDateTime endAt,
+            @Param("connectedAccountId") Long id);
+
 }

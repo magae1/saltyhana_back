@@ -13,7 +13,7 @@ public class RecommendResponseDTO {
     private String subTitle;
     private String imageUrl;
     private String description;
-
+    private String name;
     private String tendency;    // String | null   (차분하고 어쩌고) | (테스트 전)
 
 }

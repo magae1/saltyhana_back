@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 @Builder
 public class DashBoardResponseDTO {
-    private List<GoalResponseDTO> goal;
-    private List<WeekdayCalendarResponseDTO> weekday;
+    private GoalResponseDTO goal;
+    private WeekdayCalendarResponseDTO weekdayCalendar;
     private List<BestProductListResponseDTO> bestProductList;
 }
