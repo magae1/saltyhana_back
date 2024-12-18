@@ -29,9 +29,6 @@ public class GoalService {
     public SetGoalResponseDTO createGoal(SetGoalRequestDTO goalDTO) {
         // 1. 인증 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal().toString())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
-        }
 
         // 2. 사용자 조회
         Long userId = Long.parseLong(auth.getPrincipal().toString());
