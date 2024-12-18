@@ -66,4 +66,14 @@ public class Goal {
 
     @Column(nullable = false)
     private boolean isEnded;
+
+    public void update(String name, String category, Long amount, LocalDateTime startAt, LocalDateTime endAt, Icon icon, String customImage) {
+        this.name = name;
+        this.category = category;
+        this.amount = amount;
+        this.startAt = startAt;
+        this.endAt = endAt;
+        this.icon = icon;
+        this.customImage = customImage;
+    }
 }
