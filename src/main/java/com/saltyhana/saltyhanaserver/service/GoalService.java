@@ -6,6 +6,8 @@ import com.saltyhana.saltyhanaserver.dto.SetGoalResponseDTO;
 import com.saltyhana.saltyhanaserver.entity.Goal;
 import com.saltyhana.saltyhanaserver.entity.Icon;
 import com.saltyhana.saltyhanaserver.entity.User;
+import com.saltyhana.saltyhanaserver.exception.NotFoundException;
+import com.saltyhana.saltyhanaserver.mapper.GoalMapper;
 import com.saltyhana.saltyhanaserver.repository.GoalRepository;
 import com.saltyhana.saltyhanaserver.repository.IconRepository;
 import com.saltyhana.saltyhanaserver.repository.UserRepository;
@@ -144,6 +146,10 @@ public class GoalService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.parseLong(auth.getPrincipal().toString());
 
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            throw new NotFoundException("유저");
+        });
+
         // 2. 목표 조회
         Goal goal = goalRepository.findById(goalId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "목표를 찾을 수 없습니다."));
@@ -166,26 +172,11 @@ public class GoalService {
         }
 
         // 6. 목표 업데이트
-        goal.update(
-                goalDTO.getGoalName(),
-                String.valueOf(goalDTO.getGoalType()),
-                Long.valueOf(goalDTO.getGoalMoney()),
-                goalDTO.getStartDate().atStartOfDay(),
-                goalDTO.getEndDate().atStartOfDay(),
-                icon,
-                goalDTO.getGoalImg()
-        );
+        goal = GoalMapper.toEntity(user, goalDTO, icon, goalId);
+        Goal updatedGoal = goalRepository.save(goal);
 
         // 7. 응답 DTO 변환 및 반환
-        return SetGoalResponseDTO.builder()
-                .goalName(goal.getName())
-                .goalMoney(goal.getAmount().intValue())
-                .startDate(goal.getStartAt().toLocalDate())
-                .endDate(goal.getEndAt().toLocalDate())
-                .goalType(Integer.parseInt(goal.getCategory()))
-                .iconId(goal.getIcon() != null ? goal.getIcon().getId() : null)
-                .goalImg(goal.getCustomImage())
-                .build();
+        return GoalMapper.toSetGoalResponse(updatedGoal);
     }
 
     @Transactional(readOnly = true)
