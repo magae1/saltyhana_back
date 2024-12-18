@@ -4,10 +4,16 @@ import com.saltyhana.saltyhanaserver.dto.AccountRequestDTO;
 import com.saltyhana.saltyhanaserver.dto.AccountResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.TransferDTO;
 import com.saltyhana.saltyhanaserver.dto.AccountDTO;
+import com.saltyhana.saltyhanaserver.entity.User;
 import com.saltyhana.saltyhanaserver.repository.AccountRepository;
+import com.saltyhana.saltyhanaserver.repository.UserRepository;
 import com.saltyhana.saltyhanaserver.util.StringFormatter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,15 +22,21 @@ import java.util.List;
 import static com.saltyhana.saltyhanaserver.util.StringFormatter.toLacalDate;
 
 @Service
+@RequiredArgsConstructor
 public class AccountService {
-    @Autowired
-    private AccountRepository accountRepository;
-
-    @Autowired
-    private TransferService transferService;
+    private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
+    private final TransferService transferService;
 
     public List<AccountResponseDTO> getAccountTransactions(AccountRequestDTO accountRequestDTO) {
-        Long userId = accountRequestDTO.getUserId();
+        // 1. 인증 확인
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // 2. 사용자 조회
+        Long userId = Long.parseLong(auth.getPrincipal().toString());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+
         String startDate = accountRequestDTO.getStartDate();
         String endDate = accountRequestDTO.getEndDate();
 
