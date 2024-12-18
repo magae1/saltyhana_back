@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.saltyhana.saltyhanaserver.dto.ExistsResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.TokenPairResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.form.EmailForm;
 import com.saltyhana.saltyhanaserver.dto.form.IdentifierForm;
@@ -28,10 +29,12 @@ import com.saltyhana.saltyhanaserver.repository.UserRepository;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
 
-    public TokenPairResponseDTO generateTokenPairWithLoginForm(LoginForm loginForm) throws ResponseStatusException {
+    public TokenPairResponseDTO generateTokenPairWithLoginForm(LoginForm loginForm)
+            throws ResponseStatusException {
         User user = userRepo.findByIdentifier(loginForm.getIdentifier()).orElse(null);
         if (user == null) {
             throw new NotFoundException("사용자");
@@ -44,12 +47,13 @@ public class AuthService {
         return generateTokenPair(userClaims);
     }
 
-    public TokenPairResponseDTO refreshTokenPair(String oldRefreshToken) throws ResponseStatusException {
+    public TokenPairResponseDTO refreshTokenPair(String oldRefreshToken)
+            throws ResponseStatusException {
         try {
             Map<String, ?> claims = JWTProvider.parseRefreshToken(oldRefreshToken);
             return generateTokenPair(claims);
         } catch (InvalidJWTException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST , e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -63,16 +67,18 @@ public class AuthService {
         return savedUser.getId();
     }
 
-    public void checkEmail(EmailForm emailForm) {
-        if (!checkEmailExists(emailForm.getEmail())) {
-            throw new AlreadyExistsException("이메일");
-        }
+    public ExistsResponseDTO checkEmail(EmailForm emailForm) {
+        boolean exists = checkEmailExists(emailForm.getEmail());
+        return ExistsResponseDTO.builder()
+                .exists(exists)
+                .build();
     }
 
-    public void checkIdentifier(IdentifierForm identifierForm) {
-        if (!checkIdentifierExists(identifierForm.getIdentifier())) {
-            throw new AlreadyExistsException("아이디");
-        }
+    public ExistsResponseDTO checkIdentifier(IdentifierForm identifierForm) {
+        boolean exists = checkIdentifierExists(identifierForm.getIdentifier());
+        return ExistsResponseDTO.builder()
+                .exists(exists)
+                .build();
     }
 
     public boolean checkEmailExists(String email) {

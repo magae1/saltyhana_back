@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.saltyhana.saltyhanaserver.dto.ExistsResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.IdResponse;
 import com.saltyhana.saltyhanaserver.dto.IdResponse.IdResponseBuilder;
 import com.saltyhana.saltyhanaserver.dto.TokenPairResponseDTO;
@@ -40,12 +41,12 @@ public class AuthController {
     }
 
     @PostMapping("/check-identifier")
-    public void checkIdentifier(IdentifierForm identifierForm) {
-        authService.checkIdentifier(identifierForm);
+    public ExistsResponseDTO checkIdentifier(IdentifierForm identifierForm) {
+        return authService.checkIdentifier(identifierForm);
     }
 
     @PostMapping("/check-email")
-    public void checkIdentifier(EmailForm emailForm) {
-        authService.checkEmail(emailForm);
+    public ExistsResponseDTO checkIdentifier(EmailForm emailForm) {
+        return authService.checkEmail(emailForm);
     }
 }
