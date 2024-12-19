@@ -1,5 +1,6 @@
 package com.saltyhana.saltyhanaserver.controller;
 
+import com.saltyhana.saltyhanaserver.dto.AccountDTO;
 import com.saltyhana.saltyhanaserver.dto.AccountRequestDTO;
 import com.saltyhana.saltyhanaserver.dto.AccountResponseDTO;
 import com.saltyhana.saltyhanaserver.service.AccountService;
@@ -19,5 +20,10 @@ public class AccountController {
     @PostMapping("/account")
     public List<AccountResponseDTO> getAccounts(@RequestBody AccountRequestDTO accountRequestDTO) {
         return accountService.getAccountTransactions(accountRequestDTO);
+    }
+
+    @GetMapping("/accounts")
+    public List<AccountDTO> getUserAccounts() {
+        return accountService.getUserAccounts();
     }
 }
