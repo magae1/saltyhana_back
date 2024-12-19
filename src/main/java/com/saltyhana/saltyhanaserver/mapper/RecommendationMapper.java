@@ -1,6 +1,7 @@
 package com.saltyhana.saltyhanaserver.mapper;
 
 import com.saltyhana.saltyhanaserver.dto.RecommendResponseDTO;
+import com.saltyhana.saltyhanaserver.entity.Product;
 import com.saltyhana.saltyhanaserver.entity.Rate;
 import com.saltyhana.saltyhanaserver.enums.ProductEnum;
 
@@ -72,4 +73,37 @@ public class RecommendationMapper {
         String intrRate2 = rate.getIntrRate2() != null ? rate.getIntrRate2() + "%" : "정보 없음";
         return String.format("저축기간: %s, 금리: %s ~ %s", saveTrm, intrRate, intrRate2);
     }
+
+
+
+
+    /// 상품 추천 페이지 부분
+    public static List<RecommendResponseDTO> toPopularDTOList(List<Product> products, Map<Long, Rate> rateMap) {
+        return products.stream()
+                .map(product -> RecommendResponseDTO.builder()
+                        .type(ProductEnum.POPULAR)
+                        .title(product.getFinPrdtNm())
+                        .subTitle(product.getJoinMember())      // 수정 필요
+                        .imageUrl("https://example.com/image/" + product.getId())   // 수정 필요
+                        .description(formatDescription(rateMap.get(product.getId()))) // 금리 정보 추가
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    /// 상품 추천 페이지 부분
+    public static List<RecommendResponseDTO> toTendencyDTOList(List<Product> products, String tendency, Map<Long, Rate> rateMap) {
+        return products.stream()
+                .map(product -> RecommendResponseDTO.builder()
+                        .type(ProductEnum.TENDENCY)
+                        .title(product.getFinPrdtNm())
+                        .subTitle(product.getJoinMember())
+                        .imageUrl("https://example.com/image/" + product.getId())
+                        .description(formatDescription(rateMap.get(product.getId())) + " " + tendency)
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+
 }
+
+

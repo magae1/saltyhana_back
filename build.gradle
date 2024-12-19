@@ -52,6 +52,8 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    // anthropic sdk
+    implementation 'com.anthropic:anthropic-java:0.1.0-alpha.5'
 }
 
 tasks.named('test') {
