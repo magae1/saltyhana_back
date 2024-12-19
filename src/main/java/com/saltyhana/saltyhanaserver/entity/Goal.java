@@ -40,7 +40,7 @@ public class Goal {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "connected_account")
+    @JoinColumn(name = "connected_account", nullable = false)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private Account account;
 

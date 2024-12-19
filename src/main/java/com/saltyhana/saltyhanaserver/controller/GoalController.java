@@ -1,8 +1,7 @@
 package com.saltyhana.saltyhanaserver.controller;
 
 import com.saltyhana.saltyhanaserver.dto.GoalResponseDTO;
-import com.saltyhana.saltyhanaserver.dto.SetGoalRequestDTO;
-import com.saltyhana.saltyhanaserver.dto.SetGoalResponseDTO;
+import com.saltyhana.saltyhanaserver.dto.SetGoalDTO;
 import com.saltyhana.saltyhanaserver.service.GoalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +19,7 @@ public class GoalController {
     private final GoalService goalService;
 
     @PostMapping
-    public ResponseEntity<SetGoalResponseDTO> createGoal(@RequestBody SetGoalRequestDTO goalDTO) {
+    public ResponseEntity<SetGoalDTO> createGoal(@RequestBody SetGoalDTO goalDTO) {
         return ResponseEntity.ok(goalService.createOrUpdateGoal(goalDTO, null));
     }
 
@@ -31,8 +30,8 @@ public class GoalController {
     }
 
     @PutMapping("/{goalId}")
-    public ResponseEntity<SetGoalResponseDTO> updateGoal(
-            @PathVariable Long goalId, @RequestBody SetGoalRequestDTO goalDTO) {
+    public ResponseEntity<SetGoalDTO> updateGoal(
+            @PathVariable Long goalId, @RequestBody SetGoalDTO goalDTO) {
         return ResponseEntity.ok(goalService.createOrUpdateGoal(goalDTO, goalId));
     }
 }
