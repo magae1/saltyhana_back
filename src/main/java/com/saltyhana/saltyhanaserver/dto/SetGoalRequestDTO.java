@@ -13,4 +13,5 @@ public class SetGoalRequestDTO {
     private Integer goalType;
     private Long iconId;   //유저가 선택한 아이콘
     private String goalImg;  //유저가 등록한 이미지
+    private Long connectedAccount;
 }

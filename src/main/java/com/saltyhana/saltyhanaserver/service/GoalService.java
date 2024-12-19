@@ -1,13 +1,16 @@
 package com.saltyhana.saltyhanaserver.service;
 
+import com.saltyhana.saltyhanaserver.dto.AccountDTO;
 import com.saltyhana.saltyhanaserver.dto.GoalResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.SetGoalRequestDTO;
 import com.saltyhana.saltyhanaserver.dto.SetGoalResponseDTO;
+import com.saltyhana.saltyhanaserver.entity.Account;
 import com.saltyhana.saltyhanaserver.entity.Goal;
 import com.saltyhana.saltyhanaserver.entity.Icon;
 import com.saltyhana.saltyhanaserver.entity.User;
 import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.mapper.GoalMapper;
+import com.saltyhana.saltyhanaserver.repository.AccountRepository;
 import com.saltyhana.saltyhanaserver.repository.GoalRepository;
 import com.saltyhana.saltyhanaserver.repository.IconRepository;
 import com.saltyhana.saltyhanaserver.repository.UserRepository;
@@ -30,6 +33,7 @@ public class GoalService {
     private final GoalRepository goalRepository;
     private final UserRepository userRepository;
     private final IconRepository iconRepository;
+    private final AccountRepository accountRepository;
 
     @Transactional
     public SetGoalResponseDTO createGoal(SetGoalRequestDTO goalDTO) {
@@ -49,13 +53,30 @@ public class GoalService {
         // 4. 아이콘 조회 (있는 경우)
         Icon icon = null;
         if (goalDTO.getIconId() != null) {
-            System.out.println("hello");
             icon = iconRepository.findById(goalDTO.getIconId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아이콘을 찾을 수 없습니다."));
         }
-        System.out.println(icon);
 
-        // 5. Goal 엔티티 생성
+        // 5. 계좌 조회 및 검증
+        Account account = null;
+        if (goalDTO.getConnectedAccount() != null) {
+            // 먼저 사용자의 계좌 목록을 조회
+            List<AccountDTO> userAccounts = accountRepository.findByUserId(userId);
+
+            // 선택된 계좌가 사용자의 계좌 목록에 있는지 확인
+            boolean isValidAccount = userAccounts.stream()
+                    .anyMatch(acc -> acc.getId().equals(goalDTO.getConnectedAccount()));
+
+            if (!isValidAccount) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 계좌에 대한 권한이 없습니다.");
+            }
+
+            // 권한이 확인되면 실제 Account 엔티티 조회
+            account = accountRepository.findById(goalDTO.getConnectedAccount())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "계좌를 찾을 수 없습니다."));
+        }
+
+        // 6. Goal 엔티티 생성
         Goal goal = Goal.builder()
                 .user(user)
                 .name(goalDTO.getGoalName())
@@ -66,12 +87,13 @@ public class GoalService {
                 .isEnded(false)
                 .icon(icon)
                 .customImage(goalDTO.getGoalImg())
+                .account(account)  // 계좌 정보 설정
                 .build();
 
-        // 6. Goal 저장
+        // 7. Goal 저장
         Goal savedGoal = goalRepository.save(goal);
 
-        // 7. 응답 DTO 변환 및 반환
+        // 8. 응답 DTO 반환
         return SetGoalResponseDTO.builder()
                 .goalName(savedGoal.getName())
                 .goalMoney(savedGoal.getAmount().intValue())
