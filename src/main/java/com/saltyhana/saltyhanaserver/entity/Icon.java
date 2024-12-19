@@ -31,4 +31,7 @@ public class Icon {
 
     @Column(nullable = false)
     private String iconImage;
+
+    @Column(nullable = false)
+    private String color;
 }
