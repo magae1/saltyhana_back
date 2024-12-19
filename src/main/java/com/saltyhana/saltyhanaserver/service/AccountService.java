@@ -28,6 +28,19 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final TransferService transferService;
 
+    public List<AccountDTO> getUserAccounts() {
+        // 현재 인증된 사용자 정보 가져오기
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getPrincipal().toString());
+
+        // 사용자 존재 여부 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+
+        // 사용자의 계좌 목록 조회
+        return accountRepository.findByUserId(userId);
+    }
+
     public List<AccountResponseDTO> getAccountTransactions(AccountRequestDTO accountRequestDTO) {
         // 1. 인증 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
