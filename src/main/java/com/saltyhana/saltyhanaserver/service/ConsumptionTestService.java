@@ -1,25 +1,34 @@
 package com.saltyhana.saltyhanaserver.service;
 
+import com.saltyhana.saltyhanaserver.dto.ConsumptionTestAnsDTO;
 import com.saltyhana.saltyhanaserver.dto.ConsumptionTestAnswerDTO;
 import com.saltyhana.saltyhanaserver.dto.ConsumptionTestResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.ConsumptionTestResultResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.form.ConsumptionTestResultForm;
+import com.saltyhana.saltyhanaserver.dto.form.TestResultDTO;
 import com.saltyhana.saltyhanaserver.entity.ConsumptionTendency;
 import com.saltyhana.saltyhanaserver.entity.ConsumptionTest;
 import com.saltyhana.saltyhanaserver.entity.ConsumptionTestAnswer;
+import com.saltyhana.saltyhanaserver.entity.User;
 import com.saltyhana.saltyhanaserver.enums.ConsumptionMBTIEnum;
 import com.saltyhana.saltyhanaserver.enums.ConsumptionTypeEnum;
+import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.repository.ConsumptionTendencyRepository;
 import com.saltyhana.saltyhanaserver.repository.ConsumptionTestAnswerRepository;
 import com.saltyhana.saltyhanaserver.repository.ConsumptionTestRepository;
+import com.saltyhana.saltyhanaserver.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+@Log4j2
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -27,6 +36,7 @@ public class ConsumptionTestService {
     private final ConsumptionTestRepository consumptionTestRepository;
     private final ConsumptionTestAnswerRepository consumptionTestAnswerRepository;
     private final ConsumptionTendencyRepository consumptionTendencyRepository;
+    private final UserRepository userRepository;
 
     //페이지 하나 get
     public ConsumptionTestResponseDTO getPage(Long id) {
@@ -39,48 +49,91 @@ public class ConsumptionTestService {
 
     //응답 데이터 보내기(ConsumptionTestResultForm)
     @Transactional
-    public Long sendResult(ConsumptionTestResultForm form) {
-        ConsumptionTest test = consumptionTestRepository.findTestById(Long.valueOf(form.getQuestionNum()));
+    public void sendResult(Long userId, ConsumptionTestResultForm form) {
+        List<TestResultDTO> answers = form.getAnswers();
 
-        ConsumptionTestAnswer answer = ConsumptionTestAnswer.builder()
-                .testId(test)
-                .seqNum(test.getSeqNum()) //문제별로 점수 다른게 아니라 그냥 고른 답만 체크
+        List<Object> tests = consumptionTestRepository.findAllTests();
+        List<ConsumptionTestAnsDTO> boards = tests.stream().map(o -> {
+            Object[] array = (Object[]) o;
+            ConsumptionTest test = (ConsumptionTest) array[0];
+            ConsumptionTestAnswer answer = (ConsumptionTestAnswer) array[1];
+            return ConsumptionTestAnsDTO.builder()
+                    .questionNum(test.getSeqNum())
+                    .answerNum(answer.getSeqNum())
+                    .score(answer.getScore())
+                    .build();
+        }).toList();
+
+        int totalScore = 0;
+        for (TestResultDTO test : answers) {
+            for (ConsumptionTestAnsDTO board : boards) {
+                Integer questionNum = board.getQuestionNum();
+                Integer answerNum = board.getAnswerNum();
+                if (Objects.equals(test.getQuestionNum(), questionNum) && Objects.equals(test.getAnswerNum(), answerNum)) {
+                    totalScore = totalScore + board.getScore();
+                }
+            }
+        }
+
+        Optional<ConsumptionTendency> tendencyResult = consumptionTendencyRepository.findByScore(totalScore);
+        if (tendencyResult.isEmpty()) {
+            log.warn("소비 경향을 찾을 수 없습니다.");
+            return;
+        }
+        ConsumptionTendency tendency = tendencyResult.get();
+        User user = User.builder()
+                .id(userId)
+                .consumptionTendency(tendency)
                 .build();
 
-        consumptionTestAnswerRepository.save(answer);
-        return answer.getId();
-
+        userRepository.save(user);
     }
 
     //1~10개 응답데이터 모아서 소비성향 반환
-    public ConsumptionTestResultResponseDTO getTendency(Long id) {
-        List<ConsumptionTestAnswer> answers = consumptionTestAnswerRepository.findAll();
-        List<ConsumptionTestAnswerDTO> answerDtos = answers.stream()
-                .map(answer -> ConsumptionTestAnswerDTO.builder()
-                        .body(answer.getBody())
-                        .seqNum(answer.getSeqNum())
-                        .build())
-                .collect(Collectors.toList());
+    public ConsumptionTestResultResponseDTO getTendency(Long userId) throws ResponseStatusException {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("유저"));
 
-        //점수 계산
-        Integer totalScore = getScore(answerDtos);
+        ConsumptionTendency tendency = user.getConsumptionTendency();
 
-        //유형 결정
-        ConsumptionTendency consumptionTendency = determineTendency(totalScore, id);
+        if (tendency == null) {
+            throw new NotFoundException("소비 경향");
+        }
 
-        //저장
-        consumptionTendencyRepository.save(consumptionTendency);
-
-        ConsumptionTestResultResponseDTO resultDTO = ConsumptionTestResultResponseDTO.builder()
-                .id(consumptionTendency.getId())
-                .title(consumptionTendency.getTitle())
-                .description(consumptionTendency.getDescription())
-                .type(String.valueOf(consumptionTendency.getType()))
-                .mbti(String.valueOf(consumptionTendency.getMbti()))
-                .emoji(consumptionTendency.getEmoji())
+        return ConsumptionTestResultResponseDTO.builder()
+                .title(tendency.getTitle())
+                .description(tendency.getDescription())
+                .type(tendency.getType().toString())
+                .mbti(tendency.getMbti().toString())
+                .emoji(tendency.getEmoji())
                 .build();
-
-        return resultDTO;
+//
+//        List<ConsumptionTestAnswer> answers = consumptionTestAnswerRepository.findAll();
+//        List<ConsumptionTestAnswerDTO> answerDtos = answers.stream()
+//                .map(answer -> ConsumptionTestAnswerDTO.builder()
+//                        .body(answer.getBody())
+//                        .seqNum(answer.getSeqNum())
+//                        .build())
+//                .collect(Collectors.toList());
+//
+//        //점수 계산
+//        Integer totalScore = getScore(answerDtos);
+//
+//        //유형 결정
+//        ConsumptionTendency consumptionTendency = determineTendency(totalScore, id);
+//
+//        //저장
+//        consumptionTendencyRepository.save(consumptionTendency);
+//
+//        ConsumptionTestResultResponseDTO resultDTO = ConsumptionTestResultResponseDTO.builder()
+//                .id(consumptionTendency.getId())
+//                .title(consumptionTendency.getTitle())
+//                .description(consumptionTendency.getDescription())
+//                .type(String.valueOf(consumptionTendency.getType()))
+//                .mbti(String.valueOf(consumptionTendency.getMbti()))
+//                .emoji(consumptionTendency.getEmoji())
+//                .build();
+//
+//        return resultDTO;
     }
 
     //총점 계산
