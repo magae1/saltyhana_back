@@ -3,6 +3,7 @@ package com.saltyhana.saltyhanaserver.controller;
 
 import java.util.List;
 
+import com.saltyhana.saltyhanaserver.service.ConsumptionTestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,22 +24,24 @@ import com.saltyhana.saltyhanaserver.dto.form.ConsumptionTestResultForm;
 @RequestMapping("${api_prefix}/test")
 @RequiredArgsConstructor
 public class ConsumptionTestController {
+    private final ConsumptionTestService consumptionTestService;
 
+    //페이지 하나
+    @GetMapping("/{id}")
+    public ConsumptionTestResponseDTO getTest(@PathVariable Long id) {
+        return consumptionTestService.getPage(id);
+    }
+    
+    //응답 하나씩 보내기
     @PostMapping("/result")
-    public void postResult(List<ConsumptionTestResultForm> resultList) {
-        return;
+    public void postResult(ConsumptionTestResultForm result) {
+        consumptionTestService.sendResult(result);
     }
 
+    //마지막 결과
     @GetMapping("/result/{id}")
     public ConsumptionTestResultResponseDTO getResult(@PathVariable Long id) {
-        return ConsumptionTestResultResponseDTO.builder()
-                .build();
+        return consumptionTestService.getTendency(id);
     }
-
-    @GetMapping("/${id}")
-    public ConsumptionTestResponseDTO getTest(@PathVariable Long id) {
-        return ConsumptionTestResponseDTO.builder()
-                .build();
-    }
-
+    
 }
