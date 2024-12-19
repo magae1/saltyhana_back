@@ -39,7 +39,7 @@ public class Goal {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "connected_account")
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private Account account;
