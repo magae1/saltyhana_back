@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("${api_prefix}")
 @RequiredArgsConstructor
 public class DashboardController {
     private final DashboardService dashboardService;

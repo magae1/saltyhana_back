@@ -12,12 +12,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.saltyhana.saltyhanaserver.util.DashboardUtil.*;
 
 @Service
 @Transactional
@@ -57,7 +57,8 @@ public class DashboardService {
                     Icon icon = goal.getIcon();
                     Hibernate.initialize(icon);
 
-                    Long percentage = calculatePercentage(goal.getId(), goal.getAmount());
+                    Long dailyAmount = progressRepository.findLatestAfterAmountByGoalId(goal.getId());
+                    Long percentage = calculatePercentage(dailyAmount, goal.getAmount());
 
                     return GoalResponseDTO.builder()
                             .id(goal.getId())
@@ -114,28 +115,4 @@ public class DashboardService {
                 })
                 .collect(Collectors.toList());
     }
-
-
-    private Integer calculateDailyAmount(LocalDateTime startAt, LocalDateTime endAt, double goalAmount){
-        long totalDays = ChronoUnit.DAYS.between(startAt, endAt) + 1;
-        return (int)Math.round(goalAmount / totalDays);
-    }
-
-    private boolean checkIfAchieved(List<Transfer> transfers, Integer dailyAmount, LocalDateTime date) {
-        LocalDate localDate = date.toLocalDate();
-        for (Transfer t : transfers) {
-            LocalDate transTimeLocalDate = t.getTranTime().toLocalDate();
-            if (transTimeLocalDate.equals(localDate) && t.getTranAmt() == dailyAmount) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Long calculatePercentage(Long goalId, Long goalAmount){
-        Long dailyAmount = progressRepository.findLatestAfterAmountByGoalId(goalId);
-
-        return Math.round((double) dailyAmount / goalAmount * 100);
-    }
-
 }
