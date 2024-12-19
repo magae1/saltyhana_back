@@ -15,7 +15,7 @@ public class DashboardController {
     private final DashboardService dashboardService;
 
     @PostMapping("/home")
-    public List<DashBoardResponseDTO> getDashboard(@RequestBody DashBoardRequestDTO dashBoardRequestDTO){
-        return dashboardService.getGoalsAndWeekdays(dashBoardRequestDTO);
+    public List<DashBoardResponseDTO> getDashboard(){
+        return dashboardService.getGoalsAndWeekdays();
     }
 }
