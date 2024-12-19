@@ -3,6 +3,7 @@ package com.saltyhana.saltyhanaserver.service;
 import com.saltyhana.saltyhanaserver.dto.*;
 import com.saltyhana.saltyhanaserver.entity.*;
 import com.saltyhana.saltyhanaserver.enums.ProductEnum;
+import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.mapper.RecommendationMapper;
 import com.saltyhana.saltyhanaserver.repository.*;
 import jakarta.transaction.Transactional;
@@ -10,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,8 +33,15 @@ public class DashboardService {
     private final ProductRepository productRepository;
     private final RateRepository rateRepository;
 
-    public List<DashBoardResponseDTO> getGoalsAndWeekdays(DashBoardRequestDTO dashBoardRequestDTO) {
-        User user = userRepository.findById(dashBoardRequestDTO.getUserId()).orElse(null);
+    public List<DashBoardResponseDTO> getGoalsAndWeekdays() {
+        // 인증 확인
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // 사용자 조회
+        Long userId = Long.parseLong(auth.getPrincipal().toString());
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            throw new NotFoundException("사용자");
+        });
 
         List<GoalResponseDTO> goals = getGoals(user);
 
