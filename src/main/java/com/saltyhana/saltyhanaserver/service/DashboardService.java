@@ -3,6 +3,7 @@ package com.saltyhana.saltyhanaserver.service;
 import com.saltyhana.saltyhanaserver.dto.*;
 import com.saltyhana.saltyhanaserver.entity.*;
 import com.saltyhana.saltyhanaserver.enums.ProductEnum;
+import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.mapper.RecommendationMapper;
 import com.saltyhana.saltyhanaserver.repository.*;
 import jakarta.transaction.Transactional;
@@ -10,14 +11,16 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.saltyhana.saltyhanaserver.util.DashboardUtil.*;
 
 @Service
 @Transactional
@@ -30,8 +33,15 @@ public class DashboardService {
     private final ProductRepository productRepository;
     private final RateRepository rateRepository;
 
-    public List<DashBoardResponseDTO> getGoalsAndWeekdays(DashBoardRequestDTO dashBoardRequestDTO) {
-        User user = userRepository.findById(dashBoardRequestDTO.getUserId()).orElse(null);
+    public List<DashBoardResponseDTO> getGoalsAndWeekdays() {
+        // 인증 확인
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // 사용자 조회
+        Long userId = Long.parseLong(auth.getPrincipal().toString());
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            throw new NotFoundException("사용자");
+        });
 
         List<GoalResponseDTO> goals = getGoals(user);
 
@@ -57,7 +67,8 @@ public class DashboardService {
                     Icon icon = goal.getIcon();
                     Hibernate.initialize(icon);
 
-                    Long percentage = calculatePercentage(goal.getId(), goal.getAmount());
+                    Long dailyAmount = progressRepository.findLatestAfterAmountByGoalId(goal.getId());
+                    Long percentage = calculatePercentage(dailyAmount, goal.getAmount());
 
                     return GoalResponseDTO.builder()
                             .id(goal.getId())
@@ -114,28 +125,4 @@ public class DashboardService {
                 })
                 .collect(Collectors.toList());
     }
-
-
-    private Integer calculateDailyAmount(LocalDateTime startAt, LocalDateTime endAt, double goalAmount){
-        long totalDays = ChronoUnit.DAYS.between(startAt, endAt) + 1;
-        return (int)Math.round(goalAmount / totalDays);
-    }
-
-    private boolean checkIfAchieved(List<Transfer> transfers, Integer dailyAmount, LocalDateTime date) {
-        LocalDate localDate = date.toLocalDate();
-        for (Transfer t : transfers) {
-            LocalDate transTimeLocalDate = t.getTranTime().toLocalDate();
-            if (transTimeLocalDate.equals(localDate) && t.getTranAmt() == dailyAmount) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Long calculatePercentage(Long goalId, Long goalAmount){
-        Long dailyAmount = progressRepository.findLatestAfterAmountByGoalId(goalId);
-
-        return Math.round((double) dailyAmount / goalAmount * 100);
-    }
-
 }

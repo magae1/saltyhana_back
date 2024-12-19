@@ -9,12 +9,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("${api_prefix}")
 @RequiredArgsConstructor
 public class DashboardController {
     private final DashboardService dashboardService;
 
     @PostMapping("/home")
-    public List<DashBoardResponseDTO> getDashboard(@RequestBody DashBoardRequestDTO dashBoardRequestDTO){
-        return dashboardService.getGoalsAndWeekdays(dashBoardRequestDTO);
+    public List<DashBoardResponseDTO> getDashboard(){
+        return dashboardService.getGoalsAndWeekdays();
     }
 }
