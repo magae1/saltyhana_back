@@ -14,7 +14,7 @@ import java.util.List;
 public class DashboardController {
     private final DashboardService dashboardService;
 
-    @PostMapping("/home")
+    @GetMapping("/home")
     public List<DashBoardResponseDTO> getDashboard(){
         return dashboardService.getGoalsAndWeekdays();
     }
