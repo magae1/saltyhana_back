@@ -8,7 +8,6 @@ import com.saltyhana.saltyhanaserver.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,6 @@ public class DashboardService {
     private final GoalRepository goalRepository;
     private final ProgressRepository progressRepository;
     private final UserRepository userRepository;
-    private final AccountRepository accountRepository;
     private final TransferRepository transferRepository;
     private final ProductRepository productRepository;
     private final RateRepository rateRepository;
@@ -59,8 +57,7 @@ public class DashboardService {
                     Icon icon = goal.getIcon();
                     Hibernate.initialize(icon);
 
-                    Long amount = progressRepository
-                            .findLatestAfterAmountByGoalId(goal.getId());
+                    Long percentage = calculatePercentage(goal.getId(), goal.getAmount());
 
                     return GoalResponseDTO.builder()
                             .id(goal.getId())
@@ -71,7 +68,7 @@ public class DashboardService {
                             .icon(icon)
                             .amount(goal.getAmount())
                             .connected_account(goal.getAccount().getId())
-                            .percentage(amount)
+                            .percentage(percentage)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -110,14 +107,13 @@ public class DashboardService {
                             .id(product.getId())
                             .type(ProductEnum.ASSET)
                             .title(product.getFinPrdtNm())
-                            .subtitle(product.getJoinMember()) // 변할 수 있음 -> 확장
+                            .subtitle(product.getJoinMember())
                             .imageUrl("https://example.com/image/" + product.getId())
                             .description(RecommendationMapper.formatDescription(rate))
                             .build();
                 })
                 .collect(Collectors.toList());
     }
-
 
 
     private Integer calculateDailyAmount(LocalDateTime startAt, LocalDateTime endAt, double goalAmount){
@@ -134,6 +130,12 @@ public class DashboardService {
             }
         }
         return false;
+    }
+
+    private Long calculatePercentage(Long goalId, Long goalAmount){
+        Long dailyAmount = progressRepository.findLatestAfterAmountByGoalId(goalId);
+
+        return Math.round((double) dailyAmount / goalAmount * 100);
     }
 
 }
