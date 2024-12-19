@@ -27,4 +27,6 @@ public class MyPageUpdateForm {
 
     @NotBlank
     private LocalDate birth;
+
+    private String profileImage;
 }
