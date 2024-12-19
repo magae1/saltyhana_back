@@ -21,7 +21,7 @@ public class GoalController {
 
     @PostMapping
     public ResponseEntity<SetGoalResponseDTO> createGoal(@RequestBody SetGoalRequestDTO goalDTO) {
-        return ResponseEntity.ok(goalService.createGoal(goalDTO));
+        return ResponseEntity.ok(goalService.createOrUpdateGoal(goalDTO, null));
     }
 
     @GetMapping
@@ -32,8 +32,7 @@ public class GoalController {
 
     @PutMapping("/{goalId}")
     public ResponseEntity<SetGoalResponseDTO> updateGoal(
-            @PathVariable(name = "goalId") Long goalId,
-            @RequestBody SetGoalRequestDTO goalDTO) {
-        return ResponseEntity.ok(goalService.updateGoal(goalId, goalDTO));
+            @PathVariable Long goalId, @RequestBody SetGoalRequestDTO goalDTO) {
+        return ResponseEntity.ok(goalService.createOrUpdateGoal(goalDTO, goalId));
     }
 }
