@@ -19,14 +19,13 @@ import com.saltyhana.saltyhanaserver.repository.UserRepository;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserRepository userRepo;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
 
-
     // 사용자 정보 조회
     public MyPageResponseDTO getUserInfo(Long id) {
-        User user = userRepo.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("사용자"));
         return UserMapper.toMyPageResponseDTO(user);
     }
@@ -50,7 +49,7 @@ public class UserService {
             throw new WrongPasswordException();
         }
 
-        User user = userRepo.findById(userId).orElseThrow(() -> {
+        User user = userRepository.findById(userId).orElseThrow(() -> {
             throw new NotFoundException("유저");
         });
 
@@ -72,7 +71,40 @@ public class UserService {
         }
 
         user = UserMapper.toEntity(userDto);
-        User updatedUser = userRepo.save(user);
+        User updatedUser = userRepository.save(user);
         return UserMapper.toMyPageResponseDTO(updatedUser);
+    }
+
+    public boolean emailExist(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public String getTmpPassword() {
+        char[] charSet = new char[]{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
+                'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+
+        String newPassword = "";
+
+        for (int i = 0; i < 10; i++) {
+            int idx = (int) (charSet.length * Math.random());
+            newPassword += charSet[idx];
+        }
+
+        return newPassword;
+    }
+
+    @Transactional
+    public void updateTmpPassword(String tmpPassword, String email) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            throw new NotFoundException(email);
+        }
+
+        UserDTO userDto = UserMapper.toDTO(user);
+        userDto.setPassword(passwordEncoder.encode(tmpPassword));
+
+        user = UserMapper.toEntity(userDto);
+        userRepository.save(user);
     }
 }
