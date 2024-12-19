@@ -1,5 +1,6 @@
 package com.saltyhana.saltyhanaserver.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
+@Slf4j
 public class AnthropicConfig {
 
     @Value("${anthropic.api.key}")
@@ -32,9 +34,9 @@ public class AnthropicConfig {
 
             System.out.println("Request Body: " + new String(body));
             if (body == null || body.length == 0) {
-                System.out.println("Request Body is empty or null!");
+                log.info("Request Body is empty");
             } else {
-                System.out.println("Request Body 잘 들어왔는지 : " + new String(body));
+                log.info("Request Body: " + new String(body));
             }
             return execution.execute(request, body);
         });
