@@ -5,6 +5,7 @@ import com.saltyhana.saltyhanaserver.dto.AccountResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.TransferDTO;
 import com.saltyhana.saltyhanaserver.dto.AccountDTO;
 import com.saltyhana.saltyhanaserver.entity.User;
+import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.repository.AccountRepository;
 import com.saltyhana.saltyhanaserver.repository.UserRepository;
 import com.saltyhana.saltyhanaserver.util.StringFormatter;
@@ -47,8 +48,9 @@ public class AccountService {
 
         // 2. 사용자 조회
         Long userId = Long.parseLong(auth.getPrincipal().toString());
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            throw new NotFoundException("사욛자");
+        });
 
         String startDate = accountRequestDTO.getStartDate();
         String endDate = accountRequestDTO.getEndDate();
