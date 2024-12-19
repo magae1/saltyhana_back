@@ -2,8 +2,7 @@ package com.saltyhana.saltyhanaserver.service;
 
 import com.saltyhana.saltyhanaserver.dto.AccountDTO;
 import com.saltyhana.saltyhanaserver.dto.GoalResponseDTO;
-import com.saltyhana.saltyhanaserver.dto.SetGoalRequestDTO;
-import com.saltyhana.saltyhanaserver.dto.SetGoalResponseDTO;
+import com.saltyhana.saltyhanaserver.dto.SetGoalDTO;
 import com.saltyhana.saltyhanaserver.entity.Account;
 import com.saltyhana.saltyhanaserver.entity.Goal;
 import com.saltyhana.saltyhanaserver.entity.Icon;
@@ -27,6 +26,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.saltyhana.saltyhanaserver.mapper.GoalMapper.toGoalResponseDTO;
 import static com.saltyhana.saltyhanaserver.util.GoalUtil.calculatePercentage;
 
 @Service
@@ -40,7 +40,7 @@ public class GoalService {
     private final AccountRepository accountRepository;
 
     @Transactional
-    public SetGoalResponseDTO createOrUpdateGoal(SetGoalRequestDTO goalDTO, Long goalId) {
+    public SetGoalDTO createOrUpdateGoal(SetGoalDTO goalDTO, Long goalId) {
         // 인증 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -101,19 +101,18 @@ public class GoalService {
             // 새로운 목표 생성
             goal = Goal.builder()
                     .user(user)
+                    .account(account)
                     .name(goalDTO.getGoalName())
                     .category(String.valueOf(goalDTO.getGoalType()))
                     .amount(Long.valueOf(goalDTO.getGoalMoney()))
                     .startAt(goalDTO.getStartDate().atStartOfDay())
                     .endAt(goalDTO.getEndDate().atStartOfDay())
-                    .isEnded(false)
                     .icon(icon)
                     .customImage(goalDTO.getGoalImg())
-                    .account(account)  // 계좌 정보 설정
                     .build();
         } else {
             // 목표 업데이트
-            goal = GoalMapper.toEntity(user, goalDTO, icon, goalId);
+            goal = GoalMapper.toEntity(user, account, goalDTO, icon, goalId);
         }
 
         Goal updatedGoal = goalRepository.save(goal);
@@ -123,7 +122,7 @@ public class GoalService {
         }
 
         // 응답 DTO 변환 및 반환
-        return GoalMapper.toSetGoalResponse(updatedGoal);
+        return GoalMapper.toSetGoalDTO(updatedGoal);
     }
 
     @Transactional(readOnly = true)
@@ -143,17 +142,7 @@ public class GoalService {
 
         // 4. DTO 변환 및 반환
         return goals.stream()
-                .map(goal -> GoalResponseDTO.builder()
-                        .id(goal.getId())
-                        .userName(user.getName())
-                        .title(goal.getName())
-                        .startAt(goal.getStartAt())
-                        .endAt(goal.getEndAt())
-                        .icon(goal.getIcon())
-                        .connected_account(goal.getAccount() != null ? goal.getAccount().getId() : null)
-                        .amount(goal.getAmount())
-                        .percentage(calculatePercentage(goal))
-                        .build())
+                .map(goal -> toGoalResponseDTO(goal, user))
                 .collect(Collectors.toList());
     }
 }
