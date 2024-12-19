@@ -2,6 +2,7 @@ package com.saltyhana.saltyhanaserver.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,10 @@ import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.exception.WrongPasswordException;
 import com.saltyhana.saltyhanaserver.mapper.UserMapper;
 import com.saltyhana.saltyhanaserver.repository.UserRepository;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.io.File;
+import java.nio.file.Path;
 
 
 @Service
@@ -22,6 +27,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
+    private final FileService fileService;
+    private final S3FileUploadService s3FileUploadService;
 
     // 사용자 정보 조회
     public MyPageResponseDTO getUserInfo(Long id) {
@@ -70,8 +77,26 @@ public class UserService {
             userDto.setBirth(updateForm.getBirth());
         }
 
+        String localFilePath = null; // 로컬 파일 경로
+
+        if (updateForm.getProfileImage() != null) {
+            localFilePath = fileService.saveBase64File(updateForm.getProfileImage());
+            // S3 파일 업로드
+            String contentType = "multipart/form-data"; // 이미지 타입 설정 (필요시 변경)
+            File file = new File(localFilePath);
+            Path filePath = file.toPath();
+            String uploadedImageUrl = s3FileUploadService.uploadFileOnS3(filePath, contentType, file.length())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드 실패"));
+            userDto.setProfileImage(uploadedImageUrl);
+        }
+
         user = UserMapper.toEntity(userDto);
         User updatedUser = userRepository.save(user);
+
+        if (localFilePath != null) {
+            fileService.deleteFile(localFilePath);
+        }
+
         return UserMapper.toMyPageResponseDTO(updatedUser);
     }
 

@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.saltyhana.saltyhanaserver.mapper.GoalMapper.toGoalResponseDTO;
-import static com.saltyhana.saltyhanaserver.util.GoalUtil.calculatePercentage;
 
 @Service
 @RequiredArgsConstructor

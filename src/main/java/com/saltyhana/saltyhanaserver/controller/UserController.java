@@ -27,7 +27,7 @@ public class UserController {
     }
 
     @PatchMapping("/me")
-    public MyPageResponseDTO updateMyPage(MyPageUpdateForm updateForm) {
+    public MyPageResponseDTO updateMyPage(@RequestBody MyPageUpdateForm updateForm) {
         Long userId = getUserId();
         return userService.updateUserInfo(userId, updateForm);
     }
