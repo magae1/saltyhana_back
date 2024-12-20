@@ -43,7 +43,7 @@ public class DashboardService {
             throw new NotFoundException("사용자");
         });
 
-        List<GoalResponseDTO> goals = getGoals(user);
+        List<GoalSummaryResponseDTO> goals = getGoals(user);
 
         List<DashBoardResponseDTO> dashboardList = goals.stream()
                 .map(goal -> {
@@ -61,7 +61,7 @@ public class DashboardService {
 
     }
 
-    private List<GoalResponseDTO> getGoals(User user) {
+    private List<GoalSummaryResponseDTO> getGoals(User user) {
         return goalRepository.findAllByUser(user).stream()
                 .map(goal -> {
                     Icon icon = goal.getIcon();
@@ -69,28 +69,28 @@ public class DashboardService {
 
                     Long dailyAmount = progressRepository.findLatestAfterAmountByGoalId(goal.getId());
                     Long percentage = calculatePercentage(dailyAmount, goal.getAmount());
-
-                    return GoalResponseDTO.builder()
+                    String goalPeriod = formatGoalPeriod(goal.getStartAt(), goal.getEndAt());
+                    return GoalSummaryResponseDTO.builder()
                             .id(goal.getId())
                             .title(goal.getName())
                             .userName(user.getName())
-                            .startAt(goal.getStartAt())
-                            .endAt(goal.getEndAt())
-                            .icon(icon)
-                            .amount(goal.getAmount())
-                            .connected_account(goal.getAccount().getId())
+                            .goalPeriod(goalPeriod)
+                            .iconImage(icon.getIconImage())
+                            .currentMoney(dailyAmount)
+                            .totalMoney(goal.getAmount())
                             .percentage(percentage)
                             .build();
                 })
                 .collect(Collectors.toList());
     }
 
-    private WeekdayCalendarResponseDTO getWeekdayCalendar(GoalResponseDTO goalDTO){
-
+    private WeekdayCalendarResponseDTO getWeekdayCalendar(GoalSummaryResponseDTO goalDTO){
+        Goal goal = goalRepository.findById(goalDTO.getId()).orElse(null);
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime elevenDaysAgo = now.minusDays(11);
-        Integer dailyAmount = calculateDailyAmount(goalDTO.getStartAt(),goalDTO.getEndAt(),goalDTO.getAmount());
-        List<Transfer> transfers = transferRepository.findTransfersByAccountAndDateRange(elevenDaysAgo, now, goalDTO.getConnected_account());
+
+        Integer dailyAmount = calculateDailyAmount(goal.getStartAt(),goal.getEndAt(),goalDTO.getTotalMoney());
+        List<Transfer> transfers = transferRepository.findTransfersByAccountAndDateRange(elevenDaysAgo, now, goal.getAccount().getId());
         List <WeekDayType> weekDayTypes = new ArrayList<>();
 
         for(LocalDateTime date = elevenDaysAgo.plusDays(1); !date.isAfter(now); date = date.plusDays(1)) {
