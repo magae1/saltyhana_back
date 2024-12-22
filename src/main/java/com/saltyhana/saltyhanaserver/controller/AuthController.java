@@ -1,7 +1,12 @@
 package com.saltyhana.saltyhanaserver.controller;
 
 
+import com.saltyhana.saltyhanaserver.provider.JWTProvider;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +30,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public TokenPairResponseDTO login(LoginForm loginForm) {
-        return authService.generateTokenPairWithLoginForm(loginForm);
+        TokenPairResponseDTO tokenPair = authService.generateTokenPairWithLoginForm(loginForm);
+        JWTProvider.registerToken(tokenPair.getAccessToken());
+        return tokenPair;
     }
 
     @PostMapping("/refresh")
@@ -38,6 +45,16 @@ public class AuthController {
         Long id = authService.signUp(signUpForm);
         IdResponseBuilder<Long> builder = IdResponse.builder();
         return builder.id(id).build();
+    }
+
+    @PostMapping("/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        authService.logout(request, response, authentication);
+    }
+
+    @PostMapping("/unsubscribe")
+    public void unsubscribe(@NonNull Authentication authentication) {
+        authService.unsubscribe(authentication);
     }
 
     @PostMapping("/check-identifier")

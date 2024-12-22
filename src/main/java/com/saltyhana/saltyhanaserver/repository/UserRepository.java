@@ -12,9 +12,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     boolean existsByIdentifier(String identifier);
+    @Query("SELECT u FROM uuser u WHERE u.identifier = :identifier AND u.active = true")
     Optional<User> findByIdentifier(String identifier);
     Optional<User> findByEmail(String email);
-
-    @Query("SELECT u FROM uuser u LEFT JOIN FETCH u.consumptionTendency WHERE u.id = :userId")
-    Optional<User> findByIdWithConsumptionTendency(@Param("userId") Long userId);
 }

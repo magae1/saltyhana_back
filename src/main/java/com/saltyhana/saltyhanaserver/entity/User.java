@@ -4,19 +4,14 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 
 @Entity(name = "uuser")
 @Getter
+@Setter
 @ToString
 @Builder
 @EqualsAndHashCode
@@ -55,4 +50,7 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private ConsumptionTendency consumptionTendency;
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
+    private boolean active;
 }

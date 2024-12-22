@@ -14,7 +14,4 @@ public interface ConsumptionTestAnswerRepository extends JpaRepository<Consumpti
 
     @Query("select testId.id from ConsumptionTestAnswer")
     ConsumptionTestAnswer findByQuestionNum(Integer questionNum);
-
-    //
-
 }
