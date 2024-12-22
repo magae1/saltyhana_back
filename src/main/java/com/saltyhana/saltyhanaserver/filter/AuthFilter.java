@@ -24,14 +24,19 @@ import com.saltyhana.saltyhanaserver.provider.JWTProvider;
 @Log4j2
 public class AuthFilter extends OncePerRequestFilter {
 
-    //TODO: auth 구현 이후 필터 재설정
+    private final String apiPrefix;
+
+    public AuthFilter(String apiPrefix) {
+        this.apiPrefix = apiPrefix;
+    }
+
     @Override
     public boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
-            return true;
+        if (path.startsWith(apiPrefix)) {
+            return false;
         }
-        return false;
+        return true;
     }
 
     @Override
