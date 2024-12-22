@@ -1,12 +1,9 @@
 package com.saltyhana.saltyhanaserver.controller;
 
-
-import com.saltyhana.saltyhanaserver.provider.JWTProvider;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,9 +27,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public TokenPairResponseDTO login(LoginForm loginForm) {
-        TokenPairResponseDTO tokenPair = authService.generateTokenPairWithLoginForm(loginForm);
-        JWTProvider.registerToken(tokenPair.getAccessToken());
-        return tokenPair;
+      return authService.generateTokenPairWithLoginForm(loginForm);
     }
 
     @PostMapping("/refresh")
@@ -47,14 +42,12 @@ public class AuthController {
         return builder.id(id).build();
     }
 
-    @PostMapping("/logout")
-    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        authService.logout(request, response, authentication);
-    }
-
+    @PreAuthorize("hasAnyRole('ROLE_USER')")
     @PostMapping("/unsubscribe")
-    public void unsubscribe(@NonNull Authentication authentication) {
-        authService.unsubscribe(authentication);
+    public void unsubscribe() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (Long) auth.getPrincipal();
+        authService.unsubscribe(userId);
     }
 
     @PostMapping("/check-identifier")

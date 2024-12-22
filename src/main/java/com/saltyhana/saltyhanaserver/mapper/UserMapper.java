@@ -10,24 +10,26 @@ import com.saltyhana.saltyhanaserver.entity.User;
 public class UserMapper {
     public static User toEntity(SignUpForm signUpForm, String password) {
         return User.builder()
-                .email(signUpForm.getEmail())
-                .name(signUpForm.getName())
-                .identifier(signUpForm.getIdentifier())
-                .password(password)
-                .birth(signUpForm.getBirth())
-                .build();
+            .email(signUpForm.getEmail())
+            .name(signUpForm.getName())
+            .identifier(signUpForm.getIdentifier())
+            .password(password)
+            .birth(signUpForm.getBirth())
+            .active(true)
+            .build();
     }
 
     public static User toEntity(UserDTO userDTO) {
         return User.builder()
-                .id(userDTO.getId())
-                .email(userDTO.getEmail())
-                .name(userDTO.getName())
-                .identifier(userDTO.getIdentifier())
-                .password(userDTO.getPassword())
-                .birth(userDTO.getBirth())
-                .profileImage(userDTO.getProfileImage())
-                .build();
+            .id(userDTO.getId())
+            .email(userDTO.getEmail())
+            .name(userDTO.getName())
+            .identifier(userDTO.getIdentifier())
+            .password(userDTO.getPassword())
+            .birth(userDTO.getBirth())
+            .profileImage(userDTO.getProfileImage())
+            .active(userDTO.isActive())
+            .build();
     }
 
     public static User toEntity(Long id, MyPageUpdateForm myPageUpdateForm) {
@@ -53,23 +55,24 @@ public class UserMapper {
 
     public static UserDTO toDTO(User user) {
         return UserDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .identifier(user.getIdentifier())
-                .password(user.getPassword())
-                .birth(user.getBirth())
-                .profileImage(user.getProfileImage())
-                .build();
+            .id(user.getId())
+            .email(user.getEmail())
+            .name(user.getName())
+            .identifier(user.getIdentifier())
+            .password(user.getPassword())
+            .birth(user.getBirth())
+            .profileImage(user.getProfileImage())
+            .active(user.isActive())
+            .build();
     }
 
     public static MyPageResponseDTO toMyPageResponseDTO(User user) {
         return MyPageResponseDTO.builder()
-                .email(user.getEmail())
-                .name(user.getName())
-                .identifier(user.getIdentifier())
-                .birth(user.getBirth())
-                .profileImg(user.getProfileImage())
-                .build();
+            .email(user.getEmail())
+            .name(user.getName())
+            .identifier(user.getIdentifier())
+            .birth(user.getBirth())
+            .profileImg(user.getProfileImage())
+            .build();
     }
 }

@@ -16,4 +16,5 @@ public class UserDTO {
     private String email;
     private String profileImage;
     private LocalDate birth;
+    private boolean active;
 }

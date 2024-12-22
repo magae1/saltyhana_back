@@ -3,25 +3,23 @@ package com.saltyhana.saltyhanaserver.service;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.saltyhana.saltyhanaserver.dto.ExistsResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.TokenPairResponseDTO;
+import com.saltyhana.saltyhanaserver.dto.UserDTO;
 import com.saltyhana.saltyhanaserver.dto.form.EmailForm;
 import com.saltyhana.saltyhanaserver.dto.form.IdentifierForm;
 import com.saltyhana.saltyhanaserver.dto.form.LoginForm;
 import com.saltyhana.saltyhanaserver.dto.form.SignUpForm;
 import com.saltyhana.saltyhanaserver.entity.User;
+import com.saltyhana.saltyhanaserver.exception.AlreadyExistsException;
 import com.saltyhana.saltyhanaserver.exception.InvalidJWTException;
 import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.exception.WrongPasswordException;
@@ -29,7 +27,6 @@ import com.saltyhana.saltyhanaserver.mapper.UserMapper;
 import com.saltyhana.saltyhanaserver.provider.JWTProvider;
 import com.saltyhana.saltyhanaserver.repository.UserRepository;
 
-import static com.saltyhana.saltyhanaserver.util.AuthUtil.extractTokenFromRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -65,35 +62,31 @@ public class AuthService {
         if (!signUpForm.getPassword().equals(signUpForm.getConfirmPassword())) {
             throw new WrongPasswordException();
         }
+        String identifier = signUpForm.getIdentifier();
+        String email = signUpForm.getEmail();
+        Optional<User> user = userRepository.findInactiveUserByIdentifierAndEmail(identifier, email);
+        if (user.isPresent()) {
+            User existingUser = user.get();
+            UserDTO existingUserDTO = UserMapper.toDTO(existingUser);
+            existingUserDTO.setActive(true);
+            return userRepository.save(UserMapper.toEntity(existingUserDTO)).getId();
+        }
 
-        User user = UserMapper.toEntity(signUpForm, passwordEncoder.encode(signUpForm.getPassword()));
-        User savedUser = userRepository.save(user);
+        if (checkIdentifierExists(identifier)) {
+            throw new AlreadyExistsException("아이디");
+        } else if (checkEmailExists(email)) {
+            throw new AlreadyExistsException("이메일");
+        }
+
+        User savedUser = registerUser(signUpForm);
         return savedUser.getId();
     }
 
-    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        if (authentication != null) {
-            new SecurityContextLogoutHandler().logout(request, response, authentication);
-        }
-
-        String token = extractTokenFromRequest(request);
-        if (StringUtils.hasText(token)) {
-            // 토큰 상태 확인 후 로그아웃 처리
-            if (JWTProvider.isTokenActive(token)) {
-                JWTProvider.invalidateToken(token); // 로그아웃 시 토큰 비활성화
-            }
-        }
-    }
-
-    public void unsubscribe(Authentication authentication) {
-        if (authentication == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다.");
-        }
-
-        Long userId = (Long) authentication.getPrincipal();     // 사용자 ID를 Authentication에서 가져옴
+    public void unsubscribe(Long userId) {
         userRepository.findById(userId).ifPresentOrElse(user -> {
-            user.setActive(false);
-            userRepository.save(user);
+            UserDTO userDTO = UserMapper.toDTO(user);
+            userDTO.setActive(false);
+            userRepository.save(UserMapper.toEntity(userDTO));
         }, () -> {
             throw new NotFoundException("사용자");
         });
@@ -129,5 +122,10 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    private User registerUser(SignUpForm signUpForm) {
+        User user = UserMapper.toEntity(signUpForm, passwordEncoder.encode(signUpForm.getPassword()));
+        return userRepository.save(user);
     }
 }

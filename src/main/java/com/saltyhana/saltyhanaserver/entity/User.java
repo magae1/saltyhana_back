@@ -11,7 +11,6 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Entity(name = "uuser")
 @Getter
-@Setter
 @ToString
 @Builder
 @EqualsAndHashCode
@@ -52,5 +51,6 @@ public class User {
     private ConsumptionTendency consumptionTendency;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
-    private boolean active;
+    @Builder.Default
+    private boolean active = true;
 }

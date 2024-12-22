@@ -20,8 +20,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.saltyhana.saltyhanaserver.exception.InvalidJWTException;
 import com.saltyhana.saltyhanaserver.provider.JWTProvider;
 
-import static com.saltyhana.saltyhanaserver.util.AuthUtil.extractTokenFromRequest;
-
 
 @Log4j2
 public class AuthFilter extends OncePerRequestFilter {
@@ -38,14 +36,6 @@ public class AuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = extractTokenFromRequest(request);
-
-        // 토큰 유효성 확인
-        if (token != null && !JWTProvider.isTokenActive(token)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
         String authorization = request.getHeader("Authorization");
         getAuthentication(authorization).ifPresent(authentication ->
             SecurityContextHolder.getContext().setAuthentication(authentication));

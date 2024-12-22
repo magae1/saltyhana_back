@@ -23,8 +23,6 @@ public class JWTProvider {
     private static final String ACCESS_TOKEN = "access";
     private static final String REFRESH_TOKEN = "refresh";
 
-    private static final Map<String, Boolean> activeTokens = new HashMap<>(); // 활성화된 토큰 관리
-
     private JWTProvider() {}
 
     public static String generateAccessToken(Map<String, ?> claims, Date date) {
@@ -80,20 +78,5 @@ public class JWTProvider {
         } catch (Exception e) {
             throw new InvalidJWTException();
         }
-    }
-
-    // 토큰을 활성화된 상태로 등록
-    public static synchronized void registerToken(String token) {
-        activeTokens.put(token, true);        // 로그인 시 토큰을 활성화 상태로 저장
-    }
-
-    // 토큰을 비활성화하여 제거
-    public static synchronized void invalidateToken(String token) {
-        activeTokens.remove(token);              // 로그아웃 시 토큰을 제거
-    }
-
-    // 토큰 활성화 여부 확인
-    public static boolean isTokenActive(String token) {
-        return activeTokens.containsKey(token);  // activeTokens에 해당 토큰이 존재하는지 확인
     }
 }
