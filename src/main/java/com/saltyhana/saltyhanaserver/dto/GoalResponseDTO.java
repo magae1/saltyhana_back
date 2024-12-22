@@ -21,6 +21,7 @@ public class GoalResponseDTO {
     private String iconImage;
     private String iconColor;
     private String customImage;
+    private String category;
 
     @JsonIgnore
     private Icon icon;
