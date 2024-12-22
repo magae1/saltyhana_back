@@ -9,6 +9,7 @@ VALUES
     (6, '2024-06-01', 1006, 6, '하나은행', '부자씨 적금', '복리', '고정 금리 최대 4%', 'N', '실명의 개인', '저축습관 형성 목표', NULL, '2024-06-01T00:00:00', NULL, '2024-05-25T12:00:00');
 
 
+
 -------------- 일반상품
 INSERT INTO product (id, dcls_month, fin_co_no, fin_prdt_cd, kor_co_nm, fin_prdt_nm, mtrt_int, spcl_cnd, join_deny, join_member, etc_note, max_limit, dcls_strt_day, dcls_end_day, fin_co_subm_day)
 VALUES
