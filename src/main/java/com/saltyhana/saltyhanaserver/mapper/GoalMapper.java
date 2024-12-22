@@ -51,7 +51,7 @@ public class GoalMapper {
                 .customImage(goal.getCustomImage())
                 .category(goal.getCategory())
                 .connected_account(goal.getAccount() != null ? goal.getAccount().getId() : null)
-                .amount(goal.getAmount())
+                .totalMoney(goal.getAmount())
                 .percentage(calculatePercentage(goal))
                 .build();
     }
