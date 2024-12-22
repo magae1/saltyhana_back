@@ -6,7 +6,6 @@ import com.saltyhana.saltyhanaserver.service.MailService;
 import com.saltyhana.saltyhanaserver.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,7 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("${api_prefix}/password")
-@PreAuthorize("hasAnyRole('ROLE_USER')")
 @RequiredArgsConstructor
 public class MailController {
 
