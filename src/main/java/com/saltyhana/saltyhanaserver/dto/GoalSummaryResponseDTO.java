@@ -11,6 +11,7 @@ public class GoalSummaryResponseDTO {
     private String title;
     private String goalPeriod;
     private String iconImage;
+    private String customImage;
     private Long currentMoney;
     private Long totalMoney;
     private Long percentage;

@@ -49,4 +49,19 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
             @Param("endAt") LocalDateTime endAt,
             @Param("connectedAccountId") Long id);
 
+
+    @Query("""
+        SELECT t 
+        FROM Transfer t 
+        WHERE t.tranTime >= :startAt 
+        AND t.tranTime <= :endAt 
+        AND t.account.id = :connectedAccountId 
+        AND t.inOutType = 0
+        AND t.tranAmt = :dailyAmount
+    """)
+    List<Transfer> findTransfersByGoalAndDate(
+            @Param("startAt") LocalDateTime startAt,
+            @Param("endAt") LocalDateTime endAt,
+            @Param("connectedAccountId") Long id,
+            @Param("dailyAmount") Integer dailyAmount);
 }

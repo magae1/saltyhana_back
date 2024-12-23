@@ -25,9 +25,11 @@ import com.saltyhana.saltyhanaserver.provider.JWTProvider;
 public class AuthFilter extends OncePerRequestFilter {
 
     private final String apiPrefix;
+    private final JWTProvider jwtProvider;
 
-    public AuthFilter(String apiPrefix) {
+    public AuthFilter(String apiPrefix, JWTProvider jwtProvider) {
         this.apiPrefix = apiPrefix;
+        this.jwtProvider = jwtProvider;
     }
 
     @Override
@@ -56,7 +58,7 @@ public class AuthFilter extends OncePerRequestFilter {
             }
 
             String accessToken = authenticationHeader.substring(7);
-            Map<String, ?> claims = JWTProvider.parseAccessToken(accessToken);
+            Map<String, ?> claims = jwtProvider.parseAccessToken(accessToken);
             Long id = Long.parseLong(claims.get("id").toString());
             List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
             return Optional.of(new UsernamePasswordAuthenticationToken(id, accessToken, authorities));
