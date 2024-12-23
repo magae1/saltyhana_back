@@ -53,7 +53,7 @@ public class GoalService {
         Account account = null;
         if (goalDTO.getConnectedAccount() != null) {
             // 먼저 사용자의 계좌 목록을 조회
-            List<AccountDTO> userAccounts = accountRepository.findByUserId(userId);
+            List<AccountDTO> userAccounts = accountRepository.findAllByUserId(userId);
 
             // 선택된 계좌가 사용자의 계좌 목록에 있는지 확인
             boolean isValidAccount = userAccounts.stream()

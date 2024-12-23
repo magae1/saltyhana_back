@@ -27,11 +27,17 @@ public class StringFormatter {
         return List.of(startDate, endDate);
     }
 
-    public static List<LocalDate> toLacalDate(String startDate, String endDate) {
+    public static List<LocalDate> toLocalDate(String startDate, String endDate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate start = LocalDate.parse(startDate, formatter);
         LocalDate end = LocalDate.parse(endDate, formatter);
 
         return List.of(start, end);
+    }
+
+    public static List<LocalDateTime> toLocalDateTime(LocalDate startDate, LocalDate endDate) {
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+        return List.of(startDateTime, endDateTime);
     }
 }

@@ -5,6 +5,7 @@ import com.saltyhana.saltyhanaserver.repository.TransferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -20,14 +21,16 @@ public class TransferService {
         this.transferRepository = transferRepository;
     }
 
-    public List<TransferDTO> getDailyTransactions(Long accountId, String startDateString, String endDateString) {
-        List<LocalDateTime> localDateTimes = toLocalDateTime(startDateString, endDateString);
-        LocalDateTime startDate = localDateTimes.get(0);
-        LocalDateTime endDate = localDateTimes.get(1);
-
+    public List<TransferDTO> getDailyTransactions(Long accountId, LocalDate startDate,
+        LocalDate endDate) {
+        List<LocalDateTime> datetimes = toLocalDateTime(startDate, endDate);
+        LocalDateTime startDateTime = datetimes.get(0);
+        LocalDateTime endDateTime = datetimes.get(1);
         // 일일 거래 내역과 일일 잔액을 가져온다
-        List<Object[]> dailyTransactions = transferRepository.findDailyTransactions(accountId, startDate, endDate);
-        List<Object[]> dailyBalance = transferRepository.findDailyBalance(accountId, startDate, endDate);
+        List<Object[]> dailyTransactions = transferRepository.findDailyTransactions(accountId,
+            startDateTime, endDateTime);
+        List<Object[]> dailyBalance = transferRepository.findDailyBalance(accountId, startDateTime,
+            endDateTime);
 
         // 날짜별로 입금, 출금, 잔액을 기록하기 위한 맵
         Map<String, Long> totalDepositMap = new HashMap<>();
