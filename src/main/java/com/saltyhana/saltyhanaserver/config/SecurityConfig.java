@@ -47,7 +47,8 @@ public class SecurityConfig {
         .authorizeHttpRequests(authorize -> {
           authorize
               .requestMatchers(apiPrefix + "/auth/unsubscribe").authenticated()
-              .requestMatchers(apiPrefix + "/auth/**", "/password/**").permitAll()
+              .requestMatchers(apiPrefix + "/auth/**").permitAll()
+              .requestMatchers(apiPrefix + "/password/change").permitAll()
               .requestMatchers(apiPrefix + "/google-calendar/callback").permitAll()
               .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
               .requestMatchers(apiPrefix + "/**").authenticated()

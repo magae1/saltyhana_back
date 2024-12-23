@@ -6,7 +6,7 @@ import com.saltyhana.saltyhanaserver.service.MailService;
 import com.saltyhana.saltyhanaserver.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,19 +16,15 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("${api_prefix}/password")
 @RequiredArgsConstructor
 public class MailController {
-
     private final UserService userService;
     private final MailService mailService;
 
-    @PostMapping("/check")
+    @GetMapping("/change")
     public void checkEmail(@RequestParam("email") String email) {
         if(!userService.emailExist(email)) {
             throw new NotFoundException("이메일");
         }
-    }
 
-    @PostMapping("/send")
-    public void sendPassword(@RequestParam("email") String email) {
         try {
             String tmpPassword = userService.getTmpPassword();
             userService.updateTmpPassword(tmpPassword, email);
