@@ -93,6 +93,7 @@ public class DashboardService {
                             .userName(user.getName())
                             .goalPeriod(goalPeriod)
                             .iconImage(iconImage)
+                            .customImage(goal.getCustomImage())
                             .currentMoney(dailyAmount)
                             .totalMoney(goal.getAmount())
                             .percentage(percentage)
