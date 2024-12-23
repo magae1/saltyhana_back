@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.saltyhana.saltyhanaserver.dto.MyPageResponseDTO;
+import com.saltyhana.saltyhanaserver.dto.SimpleProfileResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.form.MyPageUpdateForm;
 import com.saltyhana.saltyhanaserver.service.UserService;
 
@@ -28,6 +29,12 @@ public class UserController {
     public MyPageResponseDTO updateMyPage(@RequestBody MyPageUpdateForm updateForm) {
         Long userId = getUserId();
         return userService.updateUserInfo(userId, updateForm);
+    }
+
+    @GetMapping("/me/simple")
+    public SimpleProfileResponseDTO getSimpleProfile() {
+        Long userId = getUserId();
+        return userService.getSimpleProfile(userId);
     }
 
     private Long getUserId() {

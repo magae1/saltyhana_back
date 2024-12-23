@@ -1,12 +1,18 @@
 package com.saltyhana.saltyhanaserver.service;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Optional;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.saltyhana.saltyhanaserver.dto.MyPageResponseDTO;
+import com.saltyhana.saltyhanaserver.dto.SimpleProfileResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.UserDTO;
 import com.saltyhana.saltyhanaserver.dto.form.MyPageUpdateForm;
 import com.saltyhana.saltyhanaserver.entity.User;
@@ -14,11 +20,8 @@ import com.saltyhana.saltyhanaserver.exception.AlreadyExistsException;
 import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.exception.WrongPasswordException;
 import com.saltyhana.saltyhanaserver.mapper.UserMapper;
+import com.saltyhana.saltyhanaserver.projection.NameOnly;
 import com.saltyhana.saltyhanaserver.repository.UserRepository;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.io.File;
-import java.nio.file.Path;
 
 
 @Service
@@ -30,7 +33,15 @@ public class UserService {
     private final FileService fileService;
     private final S3FileUploadService s3FileUploadService;
 
-    // 사용자 정보 조회
+    public SimpleProfileResponseDTO getSimpleProfile(Long userId)
+        throws ResponseStatusException {
+        NameOnly result = userRepository.getNameById(userId)
+            .orElseThrow(() -> new NotFoundException("사용자"));
+        return SimpleProfileResponseDTO.builder()
+            .name(result.getName())
+            .build();
+    }
+
     public MyPageResponseDTO getUserInfo(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("사용자"));

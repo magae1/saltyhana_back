@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.saltyhana.saltyhanaserver.entity.User;
+import com.saltyhana.saltyhanaserver.projection.NameOnly;
 
 
 @Repository
@@ -21,4 +22,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         + "FROM uuser u "
         + "WHERE u.active=false AND u.identifier=:identifier AND u.email=:email")
     Optional<User> findInactiveUserByIdentifierAndEmail(String identifier, String email);
+
+    @Query("SELECT u.name as name FROM uuser u WHERE u.id=:userId")
+    Optional<NameOnly> getNameById(Long userId);
 }
