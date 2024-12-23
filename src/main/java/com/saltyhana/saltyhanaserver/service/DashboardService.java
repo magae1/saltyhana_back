@@ -62,20 +62,55 @@ public class DashboardService {
     }
 
     private List<GoalSummaryResponseDTO> getGoals(User user) {
-        return goalRepository.findAllByUser(user).stream()
-                .map(goal -> {
-                    Icon icon = goal.getIcon();
-                    Hibernate.initialize(icon);
+        List<Goal> goals = goalRepository.findAllByUser(user);
 
-                    Long dailyAmount = progressRepository.findLatestAfterAmountByGoalId(goal.getId());
+        // 목표가 없을 경우 예외 처리
+        if(goals == null || goals.isEmpty()) {
+            throw new NotFoundException("설정한 목표");
+        }
+
+        return goals.stream()
+                .map(goal -> {
+                    String iconImage = null;
+                    Icon icon = goal.getIcon();
+                    if (icon != null) {
+                        try {
+                            Hibernate.initialize(icon);
+                            iconImage = icon.getIconImage();
+                        } catch (Exception e) {
+                            throw new RuntimeException("Icon 초기화 중 오류 발생: " + goal.getId(), e);
+                        }
+                    }
+
+                    // Progress
+                    Long dailyAmount = 0L;
+                    try {
+                        Long latestAmount = progressRepository.findLatestAfterAmountByGoalId(goal.getId());
+                        if (latestAmount == null) {
+                            Progress progress = Progress.builder()
+                                    .goal(goal)
+                                    .addedAmount(0L)
+                                    .afterAmount(0L)
+                                    .addedAt(LocalDateTime.now())
+                                    .build();
+                            progressRepository.save(progress);
+                        } else {
+                            dailyAmount = latestAmount;
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Progress 처리 중 에러 발생: " + e.getMessage());
+                    }
+
+                    //계산 및 DTO 생성
                     Long percentage = calculatePercentage(dailyAmount, goal.getAmount());
                     String goalPeriod = formatGoalPeriod(goal.getStartAt(), goal.getEndAt());
+
                     return GoalSummaryResponseDTO.builder()
                             .id(goal.getId())
                             .title(goal.getName())
                             .userName(user.getName())
                             .goalPeriod(goalPeriod)
-                            .iconImage(icon.getIconImage())
+                            .iconImage(iconImage)
                             .currentMoney(dailyAmount)
                             .totalMoney(goal.getAmount())
                             .percentage(percentage)
@@ -84,8 +119,13 @@ public class DashboardService {
                 .collect(Collectors.toList());
     }
 
+
     private WeekdayCalendarResponseDTO getWeekdayCalendar(GoalSummaryResponseDTO goalDTO){
-        Goal goal = goalRepository.findById(goalDTO.getId()).orElse(null);
+
+        // 목표가 없을 경우 예외 처리
+        Goal goal = goalRepository.findById(goalDTO.getId())
+                .orElseThrow(() -> new NotFoundException("목표 및 달력"));
+
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime elevenDaysAgo = now.minusDays(11);
 
@@ -110,9 +150,14 @@ public class DashboardService {
         Pageable pageable = PageRequest.of(0, 5);
         List<Product> bestProductList = productRepository.findBestProductList(pageable);
 
+        // 추천 상품이 없을 경우 예외 처리
+        if (bestProductList == null || bestProductList.isEmpty()) {
+            throw new NotFoundException("추천상품");
+        }
+
         return bestProductList.stream()
                 .map(product -> {
-                    Rate rate = rateRepository.findByProductId(product.getId()); // Product ID로 Rate 조회
+                    Rate rate = rateRepository.findByProductId(product.getId());
 
                     return BestProductListResponseDTO.builder()
                             .id(product.getId())
