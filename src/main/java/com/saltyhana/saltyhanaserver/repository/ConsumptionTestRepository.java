@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ConsumptionTestRepository extends JpaRepository<ConsumptionTest, Long> {
@@ -22,4 +21,10 @@ public interface ConsumptionTestRepository extends JpaRepository<ConsumptionTest
 
     @Query("SELECT t, a FROM ConsumptionTest t LEFT JOIN ConsumptionTestAnswer a ON t.id=a.testId.id")
     List<Object> findAllTests();
+
+    @Query("SELECT t, a "
+        + "FROM ConsumptionTest t "
+        + "LEFT JOIN ConsumptionTestAnswer a "
+        + "ON t.id=a.testId.id WHERE t.id=:testId")
+    List<Object> findTestAndAnswersById(Long testId);
 }
