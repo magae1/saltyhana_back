@@ -49,6 +49,7 @@ public class Product {
     private LocalDateTime dclsStrtDay;
     private LocalDateTime dclsEndDay;
     private LocalDateTime finCoSubmDay;
+    private String description; // 상품 설명
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)

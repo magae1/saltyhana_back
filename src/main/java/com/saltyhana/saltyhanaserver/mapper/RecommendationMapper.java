@@ -78,32 +78,35 @@ public class RecommendationMapper {
 
 
     /// 상품 추천 페이지 부분
-    public static List<RecommendResponseDTO> toPopularDTOList(List<Product> products, Map<Long, Rate> rateMap) {
+    public static List<RecommendResponseDTO> toPopularDTOList(List<Product> products, Map<Long, Rate> rateMap, String userName, String tendency) {
         return products.stream()
                 .map(product -> RecommendResponseDTO.builder()
-                        .type(ProductEnum.POPULAR)
+                        .type(ProductEnum.POPULAR) // 타입을 POPULAR로 유지
                         .title(product.getFinPrdtNm())
-                        .subTitle(product.getJoinMember())      // 수정 필요
-                        .imageUrl("https://example.com/image/" + product.getId())   // 수정 필요
+                        .subTitle(product.getSpclCnd()) // 상품의 부제목 설정
+                        .imageUrl("https://example.com/image/" + product.getId()) // 이미지 URL 생성
                         .description(formatDescription(rateMap.get(product.getId()))) // 금리 정보 추가
+                        .name(userName) // 사용자 이름 추가
+                        .tendency(tendency) // 소비 성향 추가
                         .build())
                 .collect(Collectors.toList());
     }
 
-    /// 상품 추천 페이지 부분
-    public static List<RecommendResponseDTO> toTendencyDTOList(List<Product> products, String tendency, Map<Long, Rate> rateMap) {
+
+    public static List<RecommendResponseDTO> toTendencyDTOList(List<Product> products, String tendency, Map<Long, Rate> rateMap, String userName) {
         return products.stream()
                 .map(product -> RecommendResponseDTO.builder()
                         .type(ProductEnum.TENDENCY)
                         .title(product.getFinPrdtNm())
-                        .subTitle(product.getJoinMember())
+                        .subTitle(product.getSpclCnd())
                         .imageUrl("https://example.com/image/" + product.getId())
-                        .description(formatDescription(rateMap.get(product.getId())) + " " + tendency)
+                        .description(formatDescription(rateMap.get(product.getId())))
+                        .name(userName) // 사용자 이름 설정
+                        .tendency(tendency)
                         .build())
                 .collect(Collectors.toList());
     }
-
-
 }
+
 
 
