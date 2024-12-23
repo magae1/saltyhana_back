@@ -41,6 +41,7 @@ public class SecurityConfig {
           authorize
               .requestMatchers(apiPrefix + "/auth/unsubscribe").authenticated()
               .requestMatchers(apiPrefix + "/auth/**").permitAll()
+              .requestMatchers(apiPrefix + "/password/**").permitAll()
               .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
               .requestMatchers(apiPrefix + "/**").authenticated()
               .anyRequest().permitAll();
