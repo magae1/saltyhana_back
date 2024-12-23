@@ -33,10 +33,10 @@ public class DashboardService {
     private final ProductRepository productRepository;
     private final RateRepository rateRepository;
 
+
     public List<DashBoardResponseDTO> getGoalsAndWeekdays() {
         // 인증 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
         // 사용자 조회
         Long userId = Long.parseLong(auth.getPrincipal().toString());
         User user = userRepository.findById(userId).orElseThrow(() -> {
@@ -58,8 +58,8 @@ public class DashboardService {
                 .collect(Collectors.toList());
 
         return dashboardList;
-
     }
+
 
     private List<GoalSummaryResponseDTO> getGoals(User user) {
         List<Goal> goals = goalRepository.findAllByUser(user);
@@ -81,27 +81,9 @@ public class DashboardService {
                             throw new RuntimeException("Icon 초기화 중 오류 발생: " + goal.getId(), e);
                         }
                     }
-
-                    // Progress
-                    Long dailyAmount = 0L;
-                    try {
-                        Long latestAmount = progressRepository.findLatestAfterAmountByGoalId(goal.getId());
-                        if (latestAmount == null) {
-                            Progress progress = Progress.builder()
-                                    .goal(goal)
-                                    .addedAmount(0L)
-                                    .afterAmount(0L)
-                                    .addedAt(LocalDateTime.now())
-                                    .build();
-                            progressRepository.save(progress);
-                        } else {
-                            dailyAmount = latestAmount;
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Progress 처리 중 에러 발생: " + e.getMessage());
-                    }
-
-                    //계산 및 DTO 생성
+                    // Progress 처리
+                    initializeProgress(goal);
+                    Long dailyAmount = progressRepository.findByGoalId(goal.getId()).get().getAfterAmount();
                     Long percentage = calculatePercentage(dailyAmount, goal.getAmount());
                     String goalPeriod = formatGoalPeriod(goal.getStartAt(), goal.getEndAt());
 
@@ -120,6 +102,52 @@ public class DashboardService {
     }
 
 
+    private void initializeProgress(Goal goal) {
+
+        LocalDateTime startAt = goal.getStartAt();
+        LocalDateTime endAt = goal.getEndAt();
+
+        // 하루에 이체되어야 하는 금액
+        Integer dailyAmount = calculateDailyAmount(startAt, endAt, goal.getAmount());
+
+        // 기존 Progress 가져오기 (없는 경우 새로 생성)
+        Progress progress = progressRepository.findByGoalId(goal.getId())
+                .orElseGet(() -> {
+                    Progress initialProgress = Progress.builder()
+                            .goal(goal)
+                            .addedAmount(0L)
+                            .afterAmount(0L)
+                            .addedAt(goal.getStartAt())
+                            .build();
+                    return progressRepository.save(initialProgress);
+                });
+
+        Long accumulatedAmount = progress.getAfterAmount();
+        LocalDateTime latestAddedAt = progress.getAddedAt();
+
+        // 기존 Progress의 addedAt 이후의 거래만 가져오기
+        List<Transfer> newTransfers = transferRepository.findTransfersByGoalAndDate(
+                latestAddedAt.plusSeconds(1),
+                endAt,
+                goal.getAccount().getId(),
+                dailyAmount
+        );
+
+        if (!newTransfers.isEmpty()) {
+            for (Transfer transfer : newTransfers) {
+                accumulatedAmount += transfer.getTranAmt();
+                latestAddedAt = transfer.getTranTime();
+            }
+
+            progress.setAddedAmount(Long.valueOf(dailyAmount));
+            progress.setAfterAmount(accumulatedAmount);
+            progress.setAddedAt(latestAddedAt);
+
+            progressRepository.save(progress);
+        }
+    }
+
+
     private WeekdayCalendarResponseDTO getWeekdayCalendar(GoalSummaryResponseDTO goalDTO){
 
         // 목표가 없을 경우 예외 처리
@@ -129,6 +157,7 @@ public class DashboardService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime elevenDaysAgo = now.minusDays(11);
 
+        //하루에 이체되어야 하는 금액
         Integer dailyAmount = calculateDailyAmount(goal.getStartAt(),goal.getEndAt(),goalDTO.getTotalMoney());
         List<Transfer> transfers = transferRepository.findTransfersByAccountAndDateRange(elevenDaysAgo, now, goal.getAccount().getId());
         List <WeekDayType> weekDayTypes = new ArrayList<>();
@@ -146,7 +175,9 @@ public class DashboardService {
                 .build();
     }
 
+
     private List<BestProductListResponseDTO> getBestProductList() {
+
         Pageable pageable = PageRequest.of(0, 5);
         List<Product> bestProductList = productRepository.findBestProductList(pageable);
 
