@@ -54,6 +54,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     // anthropic sdk
     implementation 'com.anthropic:anthropic-java:0.1.0-alpha.5'
+    //google calendar api
+    implementation 'com.google.api-client:google-api-client:1.31.5'
+    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.36.0'
+    implementation 'com.google.http-client:google-http-client-gson:1.45.3'
+    implementation 'com.google.apis:google-api-services-calendar:v3-rev411-1.25.0'
 }
 
 tasks.named('test') {
