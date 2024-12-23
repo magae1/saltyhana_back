@@ -1,11 +1,9 @@
 package com.saltyhana.saltyhanaserver.service;
 
-import com.saltyhana.saltyhanaserver.dto.AccountRequestDTO;
 import com.saltyhana.saltyhanaserver.dto.AccountResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.TransferDTO;
 import com.saltyhana.saltyhanaserver.dto.AccountDTO;
 import com.saltyhana.saltyhanaserver.entity.User;
-import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.repository.AccountRepository;
 import com.saltyhana.saltyhanaserver.repository.UserRepository;
 import com.saltyhana.saltyhanaserver.util.StringFormatter;
@@ -34,26 +32,16 @@ public class AccountService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.parseLong(auth.getPrincipal().toString());
 
-        // 사용자 존재 여부 확인
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
-
         // 사용자의 계좌 목록 조회
         return accountRepository.findByUserId(userId);
     }
 
-    public List<AccountResponseDTO> getAccountTransactions(AccountRequestDTO accountRequestDTO) {
+    public List<AccountResponseDTO> getAccountTransactions(String startDate, String endDate) {
         // 1. 인증 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // 2. 사용자 조회
         Long userId = Long.parseLong(auth.getPrincipal().toString());
-        User user = userRepository.findById(userId).orElseThrow(() -> {
-            throw new NotFoundException("사욛자");
-        });
-
-        String startDate = accountRequestDTO.getStartDate();
-        String endDate = accountRequestDTO.getEndDate();
 
         List<AccountDTO> accounts = accountRepository.findByUserId(userId);
 
