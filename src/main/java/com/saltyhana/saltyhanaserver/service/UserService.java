@@ -95,7 +95,7 @@ public class UserService {
         // 프로필 이미지 처리
         if (updateForm.getProfileImage() == null) {
             userDto.setProfileImage(null); // 프로필 이미지 명시적으로 null 설정
-        } else if (updateForm.getProfileImage() != null) {
+        } else if (updateForm.getProfileImage() != null && !updateForm.getProfileImage().startsWith("http")) {
             // 로컬에 Base64 이미지 파일 저장
             String localFilePath = fileService.saveBase64File(updateForm.getProfileImage());
 
