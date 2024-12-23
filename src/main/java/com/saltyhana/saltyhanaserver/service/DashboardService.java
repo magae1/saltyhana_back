@@ -8,7 +8,6 @@ import com.saltyhana.saltyhanaserver.mapper.RecommendationMapper;
 import com.saltyhana.saltyhanaserver.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -60,9 +59,10 @@ public class DashboardService {
         return dashboardList;
     }
 
-
-    private List<GoalSummaryResponseDTO> getGoals(User user) {
-        List<Goal> goals = goalRepository.findAllByUser(user);
+    @Transactional
+    protected List<GoalSummaryResponseDTO> getGoals(User user) {
+        // Fetch Join
+        List<Goal> goals = goalRepository.findAllByUserWithIcons(user);
 
         // 목표가 없을 경우 예외 처리
         if(goals == null || goals.isEmpty()) {
@@ -70,36 +70,37 @@ public class DashboardService {
         }
 
         return goals.stream()
-                .map(goal -> {
-                    String iconImage = null;
-                    Icon icon = goal.getIcon();
-                    if (icon != null) {
-                        try {
-                            Hibernate.initialize(icon);
-                            iconImage = icon.getIconImage();
-                        } catch (Exception e) {
-                            throw new RuntimeException("Icon 초기화 중 오류 발생: " + goal.getId(), e);
-                        }
-                    }
-                    // Progress 처리
-                    initializeProgress(goal);
-                    Long dailyAmount = progressRepository.findByGoalId(goal.getId()).get().getAfterAmount();
-                    Long percentage = calculatePercentage(dailyAmount, goal.getAmount());
-                    String goalPeriod = formatGoalPeriod(goal.getStartAt(), goal.getEndAt());
-
-                    return GoalSummaryResponseDTO.builder()
-                            .id(goal.getId())
-                            .title(goal.getName())
-                            .userName(user.getName())
-                            .goalPeriod(goalPeriod)
-                            .iconImage(iconImage)
-                            .customImage(goal.getCustomImage())
-                            .currentMoney(dailyAmount)
-                            .totalMoney(goal.getAmount())
-                            .percentage(percentage)
-                            .build();
-                })
+                .map(goal -> GoalToGoalSummaryResponseDTO(goal, user))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    protected GoalSummaryResponseDTO GoalToGoalSummaryResponseDTO(Goal goal, User user) {
+
+        String iconImage = null;
+        Icon icon = goal.getIcon();
+
+        if (icon != null) {
+            iconImage = icon.getIconImage();
+        }
+
+        // Progress 처리
+        initializeProgress(goal);
+        Long dailyAmount = progressRepository.findByGoalId(goal.getId()).get().getAfterAmount();
+        Long percentage = calculatePercentage(dailyAmount, goal.getAmount());
+        String goalPeriod = formatGoalPeriod(goal.getStartAt(), goal.getEndAt());
+
+        return GoalSummaryResponseDTO.builder()
+                .id(goal.getId())
+                .title(goal.getName())
+                .userName(user.getName())
+                .goalPeriod(goalPeriod)
+                .iconImage(iconImage)
+                .customImage(goal.getCustomImage())
+                .currentMoney(dailyAmount)
+                .totalMoney(goal.getAmount())
+                .percentage(percentage)
+                .build();
     }
 
 
@@ -111,7 +112,6 @@ public class DashboardService {
         // 하루에 이체되어야 하는 금액
         Integer dailyAmount = calculateDailyAmount(startAt, endAt, goal.getAmount());
 
-        // 기존 Progress 가져오기 (없는 경우 새로 생성)
         Progress progress = progressRepository.findByGoalId(goal.getId())
                 .orElseGet(() -> {
                     Progress initialProgress = Progress.builder()
