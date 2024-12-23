@@ -19,6 +19,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.saltyhana.saltyhanaserver.filter.AuthFilter;
+import com.saltyhana.saltyhanaserver.provider.JWTProvider;
 
 
 @Log4j2
@@ -29,6 +30,11 @@ public class SecurityConfig {
   @Value("${api_prefix}")
   private String apiPrefix;
 
+  @Value("${jwt.access.interval}")
+  private long accessInterval;
+
+  @Value("${jwt.refresh.interval}")
+  private long refreshInterval;
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -36,7 +42,8 @@ public class SecurityConfig {
         .cors(httpSecurityCorsConfigurer ->
             httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()))
         .csrf(AbstractHttpConfigurer::disable)
-        .addFilterBefore(new AuthFilter(apiPrefix), UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(new AuthFilter(apiPrefix, jwtProvider()),
+            UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(authorize -> {
           authorize
               .requestMatchers(apiPrefix + "/auth/unsubscribe").authenticated()
@@ -54,15 +61,20 @@ public class SecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:${port}", "http://localhost:3000"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "PUT"));
-        configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+  @Bean
+  public JWTProvider jwtProvider() {
+    return new JWTProvider(accessInterval, refreshInterval);
+  }
+
+  @Bean
+  CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(List.of("http://localhost:${port}", "http://localhost:3000"));
+    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
+    configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "PUT"));
+    configuration.setAllowCredentials(true);
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+  }
 }

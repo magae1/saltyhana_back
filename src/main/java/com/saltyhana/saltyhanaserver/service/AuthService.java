@@ -33,6 +33,7 @@ import com.saltyhana.saltyhanaserver.repository.UserRepository;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JWTProvider jwtProvider;
 
     public TokenPairResponseDTO generateTokenPairWithLoginForm(LoginForm loginForm)
             throws ResponseStatusException {
@@ -51,7 +52,7 @@ public class AuthService {
     public TokenPairResponseDTO refreshTokenPair(String oldRefreshToken)
             throws ResponseStatusException {
         try {
-            Map<String, ?> claims = JWTProvider.parseRefreshToken(oldRefreshToken);
+            Map<String, ?> claims = jwtProvider.parseRefreshToken(oldRefreshToken);
             return generateTokenPair(claims);
         } catch (InvalidJWTException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -116,8 +117,8 @@ public class AuthService {
 
     private TokenPairResponseDTO generateTokenPair(Map<String, ?> claims) {
         Date now = new Date();
-        String accessToken = JWTProvider.generateAccessToken(claims, now);
-        String refreshToken = JWTProvider.generateRefreshToken(claims, now);
+        String accessToken = jwtProvider.generateAccessToken(claims, now);
+        String refreshToken = jwtProvider.generateRefreshToken(claims, now);
         return TokenPairResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
