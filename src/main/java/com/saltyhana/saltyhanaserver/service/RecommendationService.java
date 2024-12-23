@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -56,24 +57,51 @@ public class RecommendationService {
     /**
      * 소비 성향이 있는 경우 Anthropic API 호출 후 추천 상품 반환
      */
+//    private List<RecommendResponseDTO> getPersonalizedRecommendations(User user, String userName) {
+//        String description = Optional.ofNullable(user.getConsumptionTendency())
+//                .map(consumptionTendency -> consumptionTendency.getDescription())
+//                .orElse("소비 성향이 제공되지 않았습니다.");
+//
+//        if (description.isEmpty()) {
+//            log.warn("Description is empty for user: {}", userName);
+//            return getPopularRecommendations(userName, null);
+//        }
+//
+//        String birth = user.getBirth().toString();
+//        log.info("Calling AnthropicService with birth: {}, description: {}", birth, description);
+//
+//        List<String> productNames = anthropicService.getRecommendations(birth, description);
+//        log.info("AnthropicService returned product names: {}", productNames);
+//
+//        List<Product> matchedProducts = productRepository.findAllByFinPrdtNmIn(productNames);
+//        Map<Long, Rate> rateMap = mapRatesToProducts(matchedProducts);
+//
+//        return RecommendationMapper.toTendencyDTOList(matchedProducts, description, rateMap, userName);
+//    }
+
     private List<RecommendResponseDTO> getPersonalizedRecommendations(User user, String userName) {
-        String description = user.getConsumptionTendency().getDescription();
+        String description = Optional.ofNullable(user.getConsumptionTendency())
+                .map(consumptionTendency -> consumptionTendency.getDescription())
+                .orElse("소비 성향이 제공되지 않았습니다.");
+
+        if (description.isEmpty()) {
+            log.warn("Description is empty for user: {}", userName);
+            return getPopularRecommendations(userName, null);
+        }
+
         String birth = user.getBirth().toString();
+        log.info("Calling AnthropicService with birth: {}, description: {}", birth, description);
 
-//        log.info("Calling Anthropic API for user: {}, Description: {}", userName, description);
-
-        // Anthropic API 호출
         List<String> productNames = anthropicService.getRecommendations(birth, description);
+        log.info("AnthropicService returned product names: {}", productNames);
 
-        // 상품명으로 Product 테이블에서 검색
         List<Product> matchedProducts = productRepository.findAllByFinPrdtNmIn(productNames);
-
-        // 이율 Mapping
         Map<Long, Rate> rateMap = mapRatesToProducts(matchedProducts);
 
-//        log.info("Returning personalized recommendations for user: {}, Matched Products: {}", userName, matchedProducts);
         return RecommendationMapper.toTendencyDTOList(matchedProducts, description, rateMap, userName);
     }
+
+
 
 
     /**
