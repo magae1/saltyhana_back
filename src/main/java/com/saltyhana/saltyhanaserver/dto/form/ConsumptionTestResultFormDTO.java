@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class TestResultDTO {
+public class ConsumptionTestResultFormDTO {
     @NotBlank
     private Integer questionNum;
     @NotBlank

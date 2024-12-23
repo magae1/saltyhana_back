@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ConsumptionTestAnsDTO {
+public class ConsumptionTestAnswerWithScoreDTO {
     private Integer questionNum;
     private Integer answerNum;
     private Integer score;

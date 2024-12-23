@@ -3,6 +3,7 @@ package com.saltyhana.saltyhanaserver.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -25,4 +26,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u.name as name FROM uuser u WHERE u.id=:userId")
     Optional<NameOnly> getNameById(Long userId);
+
+    @Modifying
+    @Query("UPDATE uuser u "
+        + "SET u.consumptionTendency.id = :consumptionTendencyId "
+        + "WHERE u.id = :userId")
+    void updateConsumptionTendency(Long userId, Long consumptionTendencyId);
 }

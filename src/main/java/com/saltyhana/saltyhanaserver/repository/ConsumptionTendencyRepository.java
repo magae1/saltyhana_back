@@ -10,6 +10,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ConsumptionTendencyRepository extends JpaRepository<ConsumptionTendency, Long> {
-    @Query("SELECT DISTRICT(t) FROM ConsumptionTendency t WHERE t.score <= :score")
+
+    @Query("SELECT t "
+        + "FROM ConsumptionTendency t "
+        + "WHERE t.score <= :score "
+        + "ORDER BY t.score ASC "
+        + "LIMIT 1")
     Optional<ConsumptionTendency> findByScore(Integer score);
 }
