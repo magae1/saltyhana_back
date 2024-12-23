@@ -40,6 +40,7 @@ public class UserService {
     // 사용자 정보 수정
     @Transactional
     public MyPageResponseDTO updateUserInfo(Long userId, MyPageUpdateForm updateForm) {
+        // 이메일 중복 체크
         if (authService.checkEmailExists(updateForm.getEmail())) {
             throw new AlreadyExistsException("이미 사용 중인 이메일입니다.");
         }
@@ -49,6 +50,7 @@ public class UserService {
             throw new AlreadyExistsException("이미 사용 중인 ID입니다.");
         }
 
+        // 비밀번호 확인
         String password = updateForm.getPassword();
         String confirmPassword = updateForm.getConfirmPassword();
         if (password != null && confirmPassword != null && (
@@ -56,10 +58,12 @@ public class UserService {
             throw new WrongPasswordException();
         }
 
+        // 유저 조회
         User user = userRepository.findById(userId).orElseThrow(() -> {
             throw new NotFoundException("유저");
         });
 
+        // UserDTO로 변환 및 필드 업데이트
         UserDTO userDto = UserMapper.toDTO(user);
         if (updateForm.getEmail() != null) {
             userDto.setEmail(updateForm.getEmail());
@@ -77,25 +81,34 @@ public class UserService {
             userDto.setBirth(updateForm.getBirth());
         }
 
-        String localFilePath = null; // 로컬 파일 경로
+        // 프로필 이미지 처리
+        if (updateForm.getProfileImage() == null) {
+            userDto.setProfileImage(null); // 프로필 이미지 명시적으로 null 설정
+        } else if (updateForm.getProfileImage() != null) {
+            // 로컬에 Base64 이미지 파일 저장
+            String localFilePath = fileService.saveBase64File(updateForm.getProfileImage());
 
-        if (updateForm.getProfileImage() != null) {
-            localFilePath = fileService.saveBase64File(updateForm.getProfileImage());
-            // S3 파일 업로드
-            String contentType = "multipart/form-data"; // 이미지 타입 설정 (필요시 변경)
-            File file = new File(localFilePath);
-            Path filePath = file.toPath();
-            String uploadedImageUrl = s3FileUploadService.uploadFileOnS3(filePath, contentType, file.length())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드 실패"));
-            userDto.setProfileImage(uploadedImageUrl);
+            try {
+                // S3 파일 업로드
+                String contentType = "multipart/form-data";
+                File file = new File(localFilePath);
+                Path filePath = file.toPath();
+                String uploadedImageUrl = s3FileUploadService.uploadFileOnS3(filePath, contentType, file.length())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드 실패"));
+
+                // 업로드된 이미지 URL 설정
+                userDto.setProfileImage(uploadedImageUrl);
+            } finally {
+                // 로컬 임시 파일 삭제
+                if (localFilePath != null) {
+                    fileService.deleteFile(localFilePath);
+                }
+            }
         }
 
+        // Entity로 변환 및 저장
         user = UserMapper.toEntity(userDto);
         User updatedUser = userRepository.save(user);
-
-        if (localFilePath != null) {
-            fileService.deleteFile(localFilePath);
-        }
 
         return UserMapper.toMyPageResponseDTO(updatedUser);
     }
