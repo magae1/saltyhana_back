@@ -15,6 +15,11 @@ public class GoalResponseDTO {
     private String title;
     private LocalDateTime startAt;
     private LocalDateTime endAt;
+    private String iconImage;
+    private String iconColor;
+    private String customImage;
+    private String category;
+
     @JsonIgnore
     private Icon icon;
     private Long connected_account;
