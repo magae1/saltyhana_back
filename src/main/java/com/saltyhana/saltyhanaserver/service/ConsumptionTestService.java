@@ -1,5 +1,6 @@
 package com.saltyhana.saltyhanaserver.service;
 
+import com.saltyhana.saltyhanaserver.dto.ConsumptionTestAnswerDTO;
 import com.saltyhana.saltyhanaserver.dto.ConsumptionTestAnswerWithScoreDTO;
 import com.saltyhana.saltyhanaserver.dto.ConsumptionTestResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.ConsumptionTestResultResponseDTO;
@@ -24,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -36,10 +38,31 @@ public class ConsumptionTestService {
 
     //페이지 하나 get
     public ConsumptionTestResponseDTO getPage(Long id) {
-        Optional<ConsumptionTest> test = Optional.ofNullable(consumptionTestRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("getPage not found")));
+        // 데이터 조회
+        List<Object[]> testData = consumptionTestRepository.findTestById(id);
+        if (testData.isEmpty()) {
+            throw new IllegalArgumentException("페이지를 찾을 수 없습니다.");
+        }
 
+        // 첫 번째 행에서 질문 데이터를 가져옴
+        ConsumptionTest testEntity = (ConsumptionTest) testData.get(0)[0];
+        String question = testEntity.getQuestion();
+
+        // 나머지 행에서 답변 데이터를 수집
+        List<ConsumptionTestAnswerDTO> answers = testData.stream()
+                .map(row -> {
+                    ConsumptionTestAnswer answerEntity = (ConsumptionTestAnswer) row[1];
+                    return ConsumptionTestAnswerDTO.builder()
+                            .body(answerEntity.getBody())
+                            .seqNum(answerEntity.getSeqNum())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // DTO 생성 후 반환
         return ConsumptionTestResponseDTO.builder()
-                .question(test.get().getQuestion())
+                .question(question)
+                .answers(answers)
                 .build();
     }
 
