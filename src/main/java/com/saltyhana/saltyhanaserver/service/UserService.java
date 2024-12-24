@@ -2,7 +2,6 @@ package com.saltyhana.saltyhanaserver.service;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Optional;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

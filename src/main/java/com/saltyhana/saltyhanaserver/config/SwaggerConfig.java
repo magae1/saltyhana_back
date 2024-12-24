@@ -2,9 +2,7 @@ package com.saltyhana.saltyhanaserver.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
@@ -22,8 +20,8 @@ public class SwaggerConfig {
                 .components(new Components()
                         .addSecuritySchemes("Bearer Authentication", createAPIKeyScheme()))
                 .info(new Info()
-                        .title("짭짤하나 API 문서")
-                        .description("짭짤하나 API 문서입니다.")
+                    .title("리치하나 API 문서")
+                    .description("리치하나 API 문서입니다.")
                         .version("1.0"));
     }
 
