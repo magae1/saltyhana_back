@@ -66,7 +66,6 @@ public class ConsumptionTestService {
                 .build();
     }
 
-    //응답 데이터 보내기(ConsumptionTestResultForm)
     @Transactional
     public void receiveResult(Long userId, List<ConsumptionTestResultFormDTO> resultForm)
         throws ResponseStatusException {
@@ -84,7 +83,6 @@ public class ConsumptionTestService {
         }
 
         ConsumptionTendency tendency = tendencyResult.get();
-        log.info("Tendency: {}", tendency);
         userRepository.updateConsumptionTendency(userId, tendency.getId());
     }
 

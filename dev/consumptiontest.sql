@@ -48,6 +48,10 @@ VALUES ('자주 확인하는 편이다.',10,2,1),
 
 --소비성향(결과) 유형--
 INSERT INTO consumption_tendency(description, emoji, mbti, score, title, type)
-VALUES(E'돈 쓰는 즐거움을 아는 당신!\n돈 모으는 즐거움도 한 번 느껴보실래요?','https://saltyhana-image-bucket.s3.ap-northeast-2.amazonaws.com/test-results/Money.png','___P',50,'돈 쓰는 게 제일 좋아! 욜로족','YOLO'),
-      (E'돈 쓰는 즐거움과 자산 관리의 중요성을 아시는군요!\n자산을 모으기 위해 조금만 더 노력해볼까요?','https://saltyhana-image-bucket.s3.ap-northeast-2.amazonaws.com/test-results/Nerd.png','_S_P',40,'욜로와 요노 그 사이 어딘가','YOLO'),
+VALUES (E'돈 쓰는 즐거움을 아는 당신!\n돈 모으는 즐거움도 한 번 느껴보실래요?',
+        'https://saltyhana-image-bucket.s3.ap-northeast-2.amazonaws.com/test-results/Money.png',
+        '___P', 70, '돈 쓰는 게 제일 좋아! 욜로족', 'YOLO'),
+       (E'돈 쓰는 즐거움과 자산 관리의 중요성을 아시는군요!\n자산을 모으기 위해 조금만 더 노력해볼까요?',
+        'https://saltyhana-image-bucket.s3.ap-northeast-2.amazonaws.com/test-results/Nerd.png',
+        '_S_P', 35, '욜로와 요노 그 사이 어딘가', 'YOLO'),
       (E'당장의 소비를 참고 자산을 관리하는 당신!\n부자가 될 자격이 있습니다!','https://saltyhana-image-bucket.s3.ap-northeast-2.amazonaws.com/test-results/Love.png','___J',0,E'마지막에 웃는\n진짜 승리자!','YONO');

@@ -1,23 +1,26 @@
 package com.saltyhana.saltyhanaserver.service;
 
 import com.saltyhana.saltyhanaserver.dto.RecommendResponseDTO;
+import com.saltyhana.saltyhanaserver.entity.ConsumptionTendency;
 import com.saltyhana.saltyhanaserver.entity.Product;
 import com.saltyhana.saltyhanaserver.entity.Rate;
 import com.saltyhana.saltyhanaserver.entity.User;
+import com.saltyhana.saltyhanaserver.exception.BadRequestException;
 import com.saltyhana.saltyhanaserver.mapper.RecommendationMapper;
 import com.saltyhana.saltyhanaserver.repository.ProductRepository;
 import com.saltyhana.saltyhanaserver.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Slf4j
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class RecommendationService {
@@ -27,11 +30,12 @@ public class RecommendationService {
     private final AnthropicService anthropicService;
     private final RestTemplate restTemplate;
 
-    public List<RecommendResponseDTO> getRecommendations(Long userId) {
+    public List<RecommendResponseDTO> getRecommendations(Long userId)
+        throws ResponseStatusException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with ID: {}", userId);
-                    return new IllegalArgumentException("해당하는 유저가 존재하지 않습니다.");
+                    return new BadRequestException();
                 });
 
         String userName = user.getName();
@@ -81,7 +85,7 @@ public class RecommendationService {
 
     private List<RecommendResponseDTO> getPersonalizedRecommendations(User user, String userName) {
         String description = Optional.ofNullable(user.getConsumptionTendency())
-                .map(consumptionTendency -> consumptionTendency.getDescription())
+            .map(ConsumptionTendency::getDescription)
                 .orElse("소비 성향이 제공되지 않았습니다.");
 
         if (description.isEmpty()) {
@@ -100,9 +104,6 @@ public class RecommendationService {
 
         return RecommendationMapper.toTendencyDTOList(matchedProducts, description, rateMap, userName);
     }
-
-
-
 
     /**
      * Product와 연결된 Rate를 Map 형태로 변환
