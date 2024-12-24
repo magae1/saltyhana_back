@@ -4,6 +4,8 @@ import com.saltyhana.saltyhanaserver.dto.MailDTO;
 import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.service.MailService;
 import com.saltyhana.saltyhanaserver.service.UserService;
+
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,7 @@ public class MailController {
     private final UserService userService;
     private final MailService mailService;
 
+    @Operation(summary = "비밀번호 변경 요청", description = "비밀번호 변경을 위해 이메일을 전송합니다. 임시 비밀번호가 이메일로 전송됩니다.")
     @GetMapping("/change")
     public void checkEmail(@RequestParam("email") String email) {
         if(!userService.emailExist(email)) {

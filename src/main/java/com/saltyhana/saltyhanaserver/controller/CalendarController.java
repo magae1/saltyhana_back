@@ -2,6 +2,8 @@ package com.saltyhana.saltyhanaserver.controller;
 
 import com.saltyhana.saltyhanaserver.dto.CalendarResponseDTO;
 import com.saltyhana.saltyhanaserver.service.CalendarService;
+
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,7 +23,7 @@ public class CalendarController {
         this.calendarService = calendarService;
     }
 
-    //모든 목표 조회
+    @Operation(summary = "목표 목록 조회")
     @GetMapping("/goals")
     public ResponseEntity<List<CalendarResponseDTO>> getAllCalendarGoals() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -31,7 +33,7 @@ public class CalendarController {
         return ResponseEntity.ok(goals);
     }
 
-    // 특정 목표(goalId) 삭제
+    @Operation(summary = "목표 삭제", description = "goalId에 해당하는 목표를 삭제합니다.")
     @DeleteMapping("/goals/{goalId}")
     public ResponseEntity<Void> deleteGoalById(@PathVariable Long goalId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

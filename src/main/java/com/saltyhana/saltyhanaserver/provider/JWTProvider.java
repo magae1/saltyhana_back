@@ -70,6 +70,14 @@ public class JWTProvider {
         return claims;
     }
 
+    public long getRefreshTokenExpirationInterval() {
+        return refreshTokenExpirationInterval;
+    }
+
+    public long getAccessTokenExpirationInterval() {
+        return accessTokenExpirationInterval;
+    }
+
     private Map<String, ?> parseClaims(String token) throws InvalidJWTException {
         try {
             return Jwts.parser()

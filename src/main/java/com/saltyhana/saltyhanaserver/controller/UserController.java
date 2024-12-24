@@ -1,5 +1,6 @@
 package com.saltyhana.saltyhanaserver.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
@@ -19,18 +20,21 @@ import com.saltyhana.saltyhanaserver.service.UserService;
 public class UserController {
     private final UserService userService;
 
+    @Operation(summary = "개인 정보 조회")
     @GetMapping("/me")
     public MyPageResponseDTO getMyPage() {
         Long userId = getUserId();
         return userService.getUserInfo(userId);
     }
 
+    @Operation(summary = "개인 정보 수정")
     @PatchMapping("/me")
     public MyPageResponseDTO updateMyPage(@RequestBody MyPageUpdateForm updateForm) {
         Long userId = getUserId();
         return userService.updateUserInfo(userId, updateForm);
     }
 
+    @Operation(summary = "간단한 개인 정보 조회")
     @GetMapping("/me/simple")
     public SimpleProfileResponseDTO getSimpleProfile() {
         Long userId = getUserId();

@@ -3,6 +3,7 @@ package com.saltyhana.saltyhanaserver.controller;
 import java.time.LocalDate;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,7 @@ public class AccountController {
     @Autowired
     private AccountService accountService;
 
+    @Operation(summary = "거래 내역 조회")
     @GetMapping("/transfers")
     public List<AccountResponseDTO> getAccounts(@RequestParam(required = false) LocalDate startDate,
         @RequestParam(required = false) LocalDate endDate) {
@@ -36,6 +38,7 @@ public class AccountController {
         return accountService.getAccountTransactions(userId, startDate, endDate);
     }
 
+    @Operation(summary = "계좌 목록 조회", description = "사용자의 계좌 목록을 조회합니다.")
     @GetMapping
     public List<AccountDTO> getUserAccounts() {
         Long userId = getUserId();

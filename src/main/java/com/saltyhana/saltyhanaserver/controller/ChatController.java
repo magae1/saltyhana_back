@@ -1,6 +1,8 @@
 package com.saltyhana.saltyhanaserver.controller;
 
 import com.saltyhana.saltyhanaserver.dto.ChatMessageDTO;
+
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -17,6 +19,7 @@ public class ChatController {
 
     private final SimpMessageSendingOperations template;
 
+    @Operation(summary = "채팅 내역 조회", description = "id에 해당하는 채팅방의 채팅 내역을 조회힙니다.")
     @GetMapping("/chat/{id}")
     public ResponseEntity<List<ChatMessageDTO>> getChatMessages(@PathVariable Long id) {
         ChatMessageDTO test = new ChatMessageDTO(System.currentTimeMillis(), "test", "무엇이든 물어보세요!", LocalDateTime.now(), "server");
@@ -38,6 +41,7 @@ public class ChatController {
     }
 
     // STOMP 메시지 송신 처리
+    @Operation(summary = "채팅 전송")
     @PostMapping("/send")
     public ResponseEntity<String> sendMessageFromServer(@RequestBody ChatMessageDTO chat) {
         chat.setId(System.currentTimeMillis());

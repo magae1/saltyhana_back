@@ -3,6 +3,7 @@ package com.saltyhana.saltyhanaserver.controller;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
@@ -27,19 +28,20 @@ import com.saltyhana.saltyhanaserver.dto.ConsumptionTestResultResponseDTO;
 public class ConsumptionTestController {
     private final ConsumptionTestService consumptionTestService;
 
-    //페이지 하나
+    @Operation(summary = "소비성향 테스트 조회", description = "test_id에 대한 소비성향 테스트 내용을 반환합니다.")
     @GetMapping("/{id}")
     public ConsumptionTestResponseDTO getTest(@PathVariable Long id) {
         return consumptionTestService.getPage(id);
     }
 
+    @Operation(summary = "소비성향 테스트 요청", description = "소비성향 테스트 결과를 전송합니다.")
     @PostMapping("/result")
     public void postResult(@RequestBody List<ConsumptionTestResultFormDTO> resultForm) {
         Long userId = getUserId();
         consumptionTestService.receiveResult(userId, resultForm);
     }
 
-    //마지막 결과
+    @Operation(summary = "소비성향 조회", description = "사용자의 소비성향을 조회합니다.")
     @GetMapping("/result")
     public ConsumptionTestResultResponseDTO getResult() {
         Long userId = getUserId();
