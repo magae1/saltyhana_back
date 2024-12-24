@@ -9,3 +9,7 @@ services:
       - 'POSTGRES_USER=salty'
     ports:
       - '33333:5432'
+  redis:
+    image: 'redis:latest'
+    ports:
+      - '33334:6379'
