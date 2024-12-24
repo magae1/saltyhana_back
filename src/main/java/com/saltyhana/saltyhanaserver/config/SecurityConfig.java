@@ -36,6 +36,9 @@ public class SecurityConfig {
   @Value("${jwt.refresh.interval}")
   private long refreshInterval;
 
+  @Value("${production_url}")
+  private String productionURL;
+
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
@@ -70,7 +73,8 @@ public class SecurityConfig {
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost:${port}", "http://localhost:3000"));
+    configuration.setAllowedOrigins(
+        List.of("http://localhost:${port}", "http://localhost:3000", productionURL));
     configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "PUT"));
     configuration.setAllowCredentials(true);
