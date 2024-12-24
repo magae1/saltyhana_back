@@ -10,9 +10,9 @@ import java.util.List;
 
 
 public interface GoalRepository extends JpaRepository<Goal, Long> {
-    List<Goal> findAllByUser(User user);
     List<Goal> findByUser(User user);
     List<Goal> findByUserAndIsEndedFalse(User user);
+    List<Goal> findByUserId(Long userId);
 
     @Query("SELECT g FROM Goal g LEFT JOIN FETCH g.icon WHERE g.user = :user")
     List<Goal> findAllByUserWithIcons(@Param("user") User user);
