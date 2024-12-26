@@ -209,6 +209,7 @@ public class DashboardService {
                             .subtitle(product.getSpclCnd())
                             .imageUrl("https://example.com/image/" + product.getId())
                             .description(RecommendationMapper.formatDescription(rate))
+                            .productLink(product.getLinkPrd())
                             .build();
                 })
                 .collect(Collectors.toList());

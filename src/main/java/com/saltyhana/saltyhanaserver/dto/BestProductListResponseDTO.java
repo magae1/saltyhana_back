@@ -13,4 +13,5 @@ public class BestProductListResponseDTO {
     private String subtitle;
     private String imageUrl;
     private String description;
+    private String productLink;
 }
