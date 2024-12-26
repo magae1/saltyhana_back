@@ -34,6 +34,6 @@ public class Rate {
     private String rsrvType;
     private String rsrvTypeNm;
     private Long saveTrm;
-    private Long intrRate;
-    private Long intrRate2;
+    private Double intrRate;
+    private Double intrRate2;
 }
