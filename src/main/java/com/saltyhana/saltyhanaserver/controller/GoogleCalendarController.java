@@ -1,8 +1,9 @@
 package com.saltyhana.saltyhanaserver.controller;
 
 import com.saltyhana.saltyhanaserver.service.GoogleCalendarService;
-
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("${api_prefix}/google-calendar")
 public class GoogleCalendarController {
@@ -26,10 +28,31 @@ public class GoogleCalendarController {
 
     @Operation(summary = "google oauth 콜백 url")
     @GetMapping("/callback")
-    public ResponseEntity<String> getCalendarEvents(@RequestParam String code) throws Exception {
-        googleCalendarService.exchangeCodeForCredential(code);
-        String events = googleCalendarService.getGoogleCalendarEvents();
-        return ResponseEntity.ok(events);
+    public void getCalendarEvents(@RequestParam String code, HttpServletResponse response) {
+        try {
+            googleCalendarService.exchangeCodeForCredential(code);
+
+            // 인증 성공 후 팝업 창 닫기를 위한 HTML 응답
+            response.setContentType("text/html");
+            response.getWriter().write("<script>window.close();</script>");
+        } catch (Exception e) {
+            log.error("Failed to fetch Google Calendar Events: {}", e.getMessage(), e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("text/html");
+            //response.getWriter().write("<script>window.close();</script>");
+        }
+    }
+
+    @Operation(summary = "구글 캘린더 이벤트 조회")
+    @GetMapping("/events")
+    public ResponseEntity<String> getEvents() {
+        try {
+            String events = googleCalendarService.getGoogleCalendarEvents();
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            log.error("Failed to fetch events: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @Operation(summary = "새 이벤트 추가")
@@ -42,5 +65,4 @@ public class GoogleCalendarController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding event: " + e.getMessage());
         }
     }
-
 }

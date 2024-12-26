@@ -64,7 +64,16 @@ public class GoogleCalendarService {
                 .setApplicationName("Saltyhana Calendar Integration")
                 .build();
 
-        Events events = service.events().list("primary").execute();
+        //현재 시점부터 1년 전까지의 스케줄 로딩
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime oneYearAgo = now.minusYears(1);
+
+        String timeMin = oneYearAgo.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+        Events events = service.events().list("primary")
+                .setTimeMin(new com.google.api.client.util.DateTime(timeMin))
+                .execute();
+
         List<Map<String, Object>> formattedEvents = new ArrayList<>();
 
         for (Event event : events.getItems()) {
@@ -72,11 +81,9 @@ public class GoogleCalendarService {
             eventData.put("id", event.getId());
             eventData.put("summary", event.getSummary());
             eventData.put("start", event.getStart().getDateTime() != null ? event.getStart().getDateTime().toStringRfc3339() : event.getStart().getDate().toString());
-            eventData.put("end", event.getEnd().getDateTime() != null ? event.getEnd().getDateTime().toStringRfc3339() : event.getEnd().getDate().toString());
             eventData.put("htmlLink", event.getHtmlLink());
             formattedEvents.add(eventData);
         }
-
         return objectMapper.writeValueAsString(formattedEvents);
     }
 
@@ -106,7 +113,7 @@ public class GoogleCalendarService {
         String formattedEndDateTime = endDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
         Event event = new Event()
-                .setSummary("대면 상담 예약: " + bankName)
+                .setSummary(bankName+" 방문 예약")
                 .setLocation(bankName);
 
         EventDateTime start = new EventDateTime()
