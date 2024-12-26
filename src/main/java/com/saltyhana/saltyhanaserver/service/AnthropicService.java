@@ -1,7 +1,11 @@
 package com.saltyhana.saltyhanaserver.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.saltyhana.saltyhanaserver.entity.RecommendRequest;
 import com.saltyhana.saltyhanaserver.exception.NotFoundException;
+import com.saltyhana.saltyhanaserver.repository.RecommendRequestRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,11 +28,19 @@ public class AnthropicService {
     @Value("${anthropic.api.key}")
     private String apiKey;
 
+    private final RecommendRequestRepository recommendRequestRepo;
     private final RestTemplate restTemplate;
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public List<String> getRecommendations(String birth, String description) {
+        Optional<RecommendRequest> cacheResult = recommendRequestRepo.findByBirthAndDescription(
+            birth, description);
+        if (cacheResult.isPresent()) {
+            RecommendRequest recommendRequest = cacheResult.get();
+            return parseResponse(recommendRequest.getResponse());
+        }
+
         String systemMessage = "당신은 하나은행 전문 금융 컨설턴트입니다.";
         String userMessage = buildPrompt(birth, description);
 
@@ -41,7 +53,14 @@ public class AnthropicService {
                 throw new NotFoundException("Anthropic API");
             }
 
-            return parseResponse(response.getBody());
+            String resBody = response.getBody();
+            recommendRequestRepo.save(RecommendRequest.builder()
+                .birth(birth)
+                .description(description)
+                .response(resBody)
+                .build());
+
+            return parseResponse(resBody);
         } catch (NotFoundException e) {
             throw e;
         } catch (Exception e) {
