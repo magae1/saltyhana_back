@@ -14,6 +14,12 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     List<Goal> findByUserAndIsEndedFalse(User user);
     List<Goal> findByUserId(Long userId);
 
-    @Query("SELECT g FROM Goal g LEFT JOIN FETCH g.icon WHERE g.user = :user")
+    @Query("""
+        SELECT g
+        FROM Goal g
+        LEFT JOIN FETCH g.icon
+        WHERE g.user = :user
+        AND g.endAt >= CURRENT_DATE
+    """)
     List<Goal> findAllByUserWithIcons(@Param("user") User user);
 }
