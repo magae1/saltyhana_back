@@ -1,0 +1,23 @@
+name: richhana
+
+services:
+  cache:
+    image: 'redis:7.4.1-alpine3.20'
+    expose:
+      - '6379'
+    networks:
+      - default_net
+  server:
+    build: .
+    ports:
+      - '80:9090'
+    expose:
+      - '80'
+    networks:
+      - default_net
+    depends_on:
+      - cache
+
+networks:
+  default_net:
+    driver: bridge

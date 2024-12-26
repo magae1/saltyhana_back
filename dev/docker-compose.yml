@@ -10,6 +10,6 @@ services:
     ports:
       - '33333:5432'
   redis:
-    image: 'redis:latest'
+    image: 'redis:7.4.1-alpine3.20'
     ports:
       - '33334:6379'
