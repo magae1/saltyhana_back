@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,6 +45,20 @@ public class DashboardService {
 
         List<GoalSummaryResponseDTO> goals = getGoals(user);
 
+        // 목표가 없을 경우 예외 처리
+        if (goals == null || goals.isEmpty()) {
+            List<DashBoardResponseDTO> dashboardList = new ArrayList<>();
+            List<BestProductListResponseDTO> bestProductList = getBestProductList();
+            dashboardList.add(DashBoardResponseDTO.builder()
+                    .goal(null)
+                    .weekdayCalendar(null)
+                    .bestProductList(bestProductList)
+                    .build());
+
+            return dashboardList;
+        }
+
+
         List<DashBoardResponseDTO> dashboardList = goals.stream()
                 .map(goal -> {
                     WeekdayCalendarResponseDTO weekdayCalendar = getWeekdayCalendar(goal);
@@ -66,7 +81,7 @@ public class DashboardService {
 
         // 목표가 없을 경우 예외 처리
         if(goals == null || goals.isEmpty()) {
-            throw new NotFoundException("설정한 목표");
+            return Collections.emptyList();
         }
 
         return goals.stream()
@@ -108,7 +123,6 @@ public class DashboardService {
 
         LocalDateTime startAt = goal.getStartAt();
         LocalDateTime endAt = goal.getEndAt();
-
         // 하루에 이체되어야 하는 금액
         Integer dailyAmount = calculateDailyAmount(startAt, endAt, goal.getAmount());
 
@@ -151,10 +165,7 @@ public class DashboardService {
 
     private WeekdayCalendarResponseDTO getWeekdayCalendar(GoalSummaryResponseDTO goalDTO){
 
-        // 목표가 없을 경우 예외 처리
-        Goal goal = goalRepository.findById(goalDTO.getId())
-                .orElseThrow(() -> new NotFoundException("목표 및 달력"));
-
+        Goal goal = goalRepository.findById(goalDTO.getId()).orElse(null);
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime elevenDaysAgo = now.minusDays(11);
 
