@@ -103,7 +103,7 @@ public class AnthropicService {
         return String.format(
                 """
                 당신은 하나은행 전문 금융 컨설턴트입니다. 사용자의 프로필을 분석하고 제공된 목록에서 가장 적합한 금융 상품을 추천해주세요.
-
+                상품의 이름만 알려주면 돼
                 사용자 정보:
                 - 나이: %s
                 - 소비 성향: %s

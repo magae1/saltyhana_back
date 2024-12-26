@@ -34,6 +34,7 @@ public class RecommendationMapper {
                         .description(formatDescription(rateMap.get(product.getId()))) // 금리 정보 추가
                         .name(userName) // 사용자 이름 추가
                         .tendency(tendency) // 소비 성향 추가
+                        .link(product.getLinkPrd())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -49,6 +50,7 @@ public class RecommendationMapper {
                         .description(formatDescription(rateMap.get(product.getId())))
                         .name(userName) // 사용자 이름 설정
                         .tendency(tendency)
+                        .link(product.getLinkPrd())
                         .build())
                 .collect(Collectors.toList());
     }

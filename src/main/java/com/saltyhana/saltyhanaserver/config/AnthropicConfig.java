@@ -22,8 +22,8 @@ public class AnthropicConfig {
     @Bean
     public RestTemplate restTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(25000);
-        factory.setReadTimeout(25000);
+        factory.setConnectTimeout(30000);
+        factory.setReadTimeout(30000);
 
         RestTemplate restTemplate = new RestTemplate(new BufferingClientHttpRequestFactory(factory));
 
