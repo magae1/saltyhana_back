@@ -50,6 +50,8 @@ public class Product {
     private LocalDateTime dclsEndDay;
     private LocalDateTime finCoSubmDay;
     private String description; // 상품 설명
+    private String linkPrd; // 하나은행 상품 링크
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
