@@ -206,7 +206,7 @@ public class DashboardService {
                             .id(product.getId())
                             .type(ProductEnum.ASSET)
                             .title(product.getFinPrdtNm())
-                            .subtitle(product.getJoinMember())
+                            .subtitle(product.getSpclCnd())
                             .imageUrl("https://example.com/image/" + product.getId())
                             .description(RecommendationMapper.formatDescription(rate))
                             .build();
