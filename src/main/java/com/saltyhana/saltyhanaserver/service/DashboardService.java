@@ -30,6 +30,7 @@ public class DashboardService {
     private final TransferRepository transferRepository;
     private final ProductRepository productRepository;
     private final RateRepository rateRepository;
+    private final ProgressService progressService;
 
     public List<DashBoardResponseDTO> getGoalsAndWeekdays() {
         // 인증 확인
@@ -98,9 +99,8 @@ public class DashboardService {
         }
 
         // Progress 처리
-        initializeProgress(goal);
-
-        Long dailyAmount = progressRepository.findByGoalId(goal.getId()).get().getAfterAmount();
+        progressService.insertProgress(goal);
+        Long dailyAmount = progressRepository.findRecentProgressByGoalId(goal.getId()).get().getAfterAmount();
         Long percentage = calculatePercentage(dailyAmount, goal.getAmount());
         String goalPeriod = formatGoalPeriod(goal.getStartAt(), goal.getEndAt());
 
@@ -123,52 +123,6 @@ public class DashboardService {
                 .build();
     }
 
-
-    private void initializeProgress(Goal goal) {
-
-        LocalDateTime startAt = goal.getStartAt();
-        LocalDateTime endAt = goal.getEndAt();
-        // 하루에 이체되어야 하는 금액
-        Integer dailyAmount = calculateDailyAmount(startAt, endAt, goal.getAmount());
-
-        Progress progress = progressRepository.findByGoalId(goal.getId())
-                .orElseGet(() -> {
-                    Progress initialProgress = Progress.builder()
-                            .goal(goal)
-                            .addedAmount(0L)
-                            .afterAmount(0L)
-                            .addedAt(goal.getStartAt())
-                            .build();
-                    progressRepository.save(initialProgress); // 저장
-                    return initialProgress; // 저장한 객체 반환
-                });
-
-        Long accumulatedAmount = progress.getAfterAmount();
-        LocalDateTime latestAddedAt = progress.getAddedAt();
-
-        // 기존 Progress의 addedAt 이후의 거래만 가져오기
-        List<Transfer> newTransfers = transferRepository.findTransfersByGoalAndDate(
-                latestAddedAt.plusSeconds(1),
-                endAt,
-                goal.getAccount().getId(),
-                dailyAmount
-        );
-
-        if (!newTransfers.isEmpty()) {
-            for (Transfer transfer : newTransfers) {
-                accumulatedAmount += transfer.getTranAmt();
-                latestAddedAt = transfer.getTranTime();
-            }
-
-            progress.setAddedAmount(Long.valueOf(dailyAmount));
-            progress.setAfterAmount(accumulatedAmount);
-            progress.setAddedAt(latestAddedAt);
-
-            progressRepository.save(progress);
-        }
-    }
-
-
     private WeekdayCalendarResponseDTO getWeekdayCalendar(GoalSummaryResponseDTO goalDTO){
 
         Goal goal = goalRepository.findById(goalDTO.getId()).orElse(null);
@@ -177,7 +131,7 @@ public class DashboardService {
 
         //하루에 이체되어야 하는 금액
         Integer dailyAmount = calculateDailyAmount(goal.getStartAt(),goal.getEndAt(),goalDTO.getTotalMoney());
-        List<Transfer> transfers = transferRepository.findTransfersByAccountAndDateRange(elevenDaysAgo, now, goal.getAccount().getId());
+        List<Transfer> transfers = transferRepository.findTransfersByAccountAndDateRange(elevenDaysAgo, now, goal.getName());
         List <WeekDayType> weekDayTypes = new ArrayList<>();
 
         for(LocalDateTime date = elevenDaysAgo.plusDays(1); !date.isAfter(now); date = date.plusDays(1)) {
