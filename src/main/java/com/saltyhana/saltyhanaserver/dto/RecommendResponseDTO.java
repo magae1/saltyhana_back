@@ -15,5 +15,6 @@ public class RecommendResponseDTO {
     private String description;
     private String name;
     private String tendency;    // String | null   (차분하고 어쩌고) | (테스트 전)
-    private String link;    // 상품 링크
+    private String link;        // 상품 링크
+    private String reason;      // 상품들 추천 이유
 }
