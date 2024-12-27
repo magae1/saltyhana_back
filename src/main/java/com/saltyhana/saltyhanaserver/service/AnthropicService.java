@@ -33,9 +33,10 @@ public class AnthropicService {
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public List<String> getRecommendations(String birth, String description) {
+
+    public List<Map<String, String>> getRecommendations(String birth, String description) {
         Optional<RecommendRequest> cacheResult = recommendRequestRepo.findByBirthAndDescription(
-            birth, description);
+                birth, description);
         if (cacheResult.isPresent()) {
             RecommendRequest recommendRequest = cacheResult.get();
             return parseResponse(recommendRequest.getResponse());
@@ -55,12 +56,12 @@ public class AnthropicService {
 
             String resBody = response.getBody();
             recommendRequestRepo.save(RecommendRequest.builder()
-                .birth(birth)
-                .description(description)
-                .response(resBody)
-                .build());
+                    .birth(birth)
+                    .description(description)
+                    .response(resBody)
+                    .build());
 
-            return parseResponse(resBody);
+            return parseResponse(resBody); // 변경된 parseResponse 호출
         } catch (NotFoundException e) {
             throw e;
         } catch (Exception e) {
@@ -68,6 +69,7 @@ public class AnthropicService {
             throw new NotFoundException("Anthropic API");
         }
     }
+
 
     private HttpEntity<String> createHttpEntity(String systemMessage, String userMessage) {
         HttpHeaders headers = new HttpHeaders();
@@ -102,24 +104,25 @@ public class AnthropicService {
 
         return String.format(
                 """
-                 당신은 하나은행 전문 금융 컨설턴트입니다. 사용자의 프로필을 분석하고 제공된 목록에서 가장 적합한 금융 상품을 추천해주세요.
-                 상품의 이름만 알려주면 됩니다.
-                 
-                 **중요한 제한 사항**:
-                 - 반드시 아래 제공된 목록에 있는 상품 이름만 사용할 것.
-                 - 목록에 없는 상품은 절대 응답하지 말 것.
-                 - 상품 이름은 띄어쓰기나 문구를 임의로 수정하지 말 것.
-     
-                 사용자 정보:
-                 - 나이: %s
-                 - 소비 성향: %s
-     
-                 제공된 금융 상품 목록:
-                 %s
-     
-                 **응답 형식**:
-                 "상품1,상품2,상품3,... (총 9개)"
-                 """,
+                당신은 하나은행 전문 금융 컨설턴트입니다. 사용자의 프로필을 분석하고 제공된 목록에서 가장 적합한 금융 상품을 추천하고, 추천 이유를 간단히 설명해주세요.
+                상품의 이름과 추천 이유를 알려주면 됩니다.
+                
+                **중요한 제한 사항**:
+                - 반드시 아래 제공된 목록에 있는 상품 이름만 사용할 것.
+                - 목록에 없는 상품은 절대 응답하지 말 것.
+                - 상품 이름은 띄어쓰기나 문구를 임의로 수정하지 말 것.
+                
+                사용자 정보:
+                - 나이: %s
+                - 소비 성향: %s
+                
+                제공된 금융 상품 목록:
+                %s
+                
+                **응답 형식**:
+                "상품1,상품2,상품3,상품4,상품5,상품6,상품7,상품8,상품9,"
+                "추천 이유: 사용자의 나이와 소비 성향에 따라 안정적이고 높은 수익률을 제공하는 상품을 우선적으로 선택했습니다."
+                """,
                 birth, description, productList
         );
     }
@@ -150,8 +153,7 @@ public class AnthropicService {
         });
     }
 
-
-    private List<String> parseResponse(String responseBody) {
+    private List<Map<String, String>> parseResponse(String responseBody) {
         try {
             Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
 
@@ -160,21 +162,26 @@ public class AnthropicService {
                 throw new NotFoundException("Anthropic API 응답");
             }
 
-            StringBuilder fullContent = new StringBuilder();
+            List<Map<String, String>> recommendations = new ArrayList<>();
             for (Map<String, Object> contentItem : contentList) {
                 if ("text".equals(contentItem.get("type"))) {
-                    fullContent.append(contentItem.get("text"));
+                    String text = (String) contentItem.get("text");
+                    String[] parts = text.split("추천 이유:");
+                    if (parts.length == 2) {
+                        String productName = parts[0].trim();
+                        String reason = parts[1].trim();
+                        recommendations.add(Map.of("productName", productName, "reason", reason));
+                    }
                 }
             }
 
-            String content = fullContent.toString();
-            return Arrays.stream(content.split(",|\\n"))
-                    .map(String::trim)
-                    .filter(item -> !item.isEmpty())
-                    .collect(Collectors.toList());
+            return recommendations;
         } catch (Exception e) {
             log.error("API 응답 파싱 실패: {}", e.getMessage());
             throw new NotFoundException("Anthropic API 응답");
         }
     }
+
+
+
 }
