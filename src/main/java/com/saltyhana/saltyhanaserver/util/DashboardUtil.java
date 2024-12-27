@@ -10,7 +10,7 @@ import java.util.List;
 
 public class DashboardUtil {
     public static Integer calculateDailyAmount(LocalDateTime startAt, LocalDateTime endAt, double goalAmount){
-        long totalDays = ChronoUnit.DAYS.between(startAt, endAt) + 1;
+        long totalDays = ChronoUnit.DAYS.between(startAt, endAt);
         return (int)Math.round(goalAmount / totalDays);
     }
 
@@ -18,7 +18,7 @@ public class DashboardUtil {
         LocalDate localDate = date.toLocalDate();
         for (Transfer t : transfers) {
             LocalDate transTimeLocalDate = t.getTranTime().toLocalDate();
-            if (transTimeLocalDate.equals(localDate) && t.getTranAmt() == dailyAmount) {
+            if (transTimeLocalDate.equals(localDate) && t.getTranAmt().equals(dailyAmount)) {
                 return true;
             }
         }
