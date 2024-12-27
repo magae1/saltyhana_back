@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import com.saltyhana.saltyhanaserver.service.GoalMessageQueueService;
+import com.saltyhana.saltyhanaserver.dto.GoalMessageDTO;
+import com.saltyhana.saltyhanaserver.entity.Icon;
 import com.saltyhana.saltyhanaserver.entity.Goal;
+import com.saltyhana.saltyhanaserver.component.RedisMessageQueue;
 
 import java.time.LocalDateTime;
 
@@ -26,7 +28,7 @@ import java.time.LocalDateTime;
 public class GoalEntityListener {
 
   @Autowired
-  private GoalMessageQueueService goalMessageQueueService;
+  private RedisMessageQueue<GoalMessageDTO> goalMessageQueue;
 
   private static ProgressService progressService;
 
@@ -54,7 +56,7 @@ public class GoalEntityListener {
         .build();
     String keyName = Long.toString(goal.getUser().getId());
     log.debug("key: {}, DTO: {}", keyName, goalMessageDTO);
-    goalMessageQueueService.pushMessage(keyName, goalMessageDTO);
+    goalMessageQueue.pushMessage(keyName, goalMessageDTO);
   }
 
   @Deprecated

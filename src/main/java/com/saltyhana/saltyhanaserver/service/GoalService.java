@@ -1,5 +1,6 @@
 package com.saltyhana.saltyhanaserver.service;
 
+import com.saltyhana.saltyhanaserver.component.RedisMessageQueue;
 import com.saltyhana.saltyhanaserver.dto.AccountDTO;
 import com.saltyhana.saltyhanaserver.dto.GoalMessageDTO;
 import com.saltyhana.saltyhanaserver.dto.GoalResponseDTO;
@@ -35,11 +36,12 @@ import static com.saltyhana.saltyhanaserver.mapper.GoalMapper.toGoalResponseDTO;
 public class GoalService {
     private final S3FileUploadService s3FileUploadService;
     private final FileService fileService;
-    private final GoalMessageQueueService goalMessageQueueService;
+    private final RedisMessageQueue<GoalMessageDTO> goalMessageQueue;
     private final GoalRepository goalRepository;
     private final UserRepository userRepository;
     private final IconRepository iconRepository;
     private final AccountRepository accountRepository;
+
 
     @Transactional
     public SetGoalDTO createOrUpdateGoal(SetGoalDTO goalDTO, Long goalId) {
@@ -150,6 +152,6 @@ public class GoalService {
 
     public List<GoalMessageDTO> getGoalMessages(Long userId) {
         String keyName = Long.toString(userId);
-        return goalMessageQueueService.popAllMessages(keyName);
+        return goalMessageQueue.popAllMessages(keyName);
     }
 }

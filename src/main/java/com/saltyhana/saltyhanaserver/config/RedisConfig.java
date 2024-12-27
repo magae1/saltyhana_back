@@ -8,10 +8,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-
-import com.saltyhana.saltyhanaserver.dto.GoalMessageDTO;
 
 
 @Configuration
@@ -28,12 +26,12 @@ public class RedisConfig {
   }
 
   @Bean
-  public RedisTemplate<String, GoalMessageDTO> redisTemplate(
+  public RedisTemplate<String, ?> redisTemplate(
       RedisConnectionFactory connectionFactory) {
-    RedisTemplate<String, GoalMessageDTO> template = new RedisTemplate<>();
+    RedisTemplate<String, ?> template = new RedisTemplate<>();
     template.setConnectionFactory(connectionFactory);
     template.setKeySerializer(new StringRedisSerializer());
-    template.setValueSerializer(new Jackson2JsonRedisSerializer<>(GoalMessageDTO.class));
+    template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
     return template;
   }
 }
