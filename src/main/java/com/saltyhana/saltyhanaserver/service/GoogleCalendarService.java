@@ -9,8 +9,12 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
+import com.saltyhana.saltyhanaserver.exception.GoogleCalendarException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,11 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class GoogleCalendarService {
 
     private final GoogleAuthorizationCodeFlow googleAuthorizationCodeFlow;
     private final ObjectMapper objectMapper;
+    private final Map<String, Credential> userCredentials = new HashMap<>();
     private Credential credential;
 
     @Value("${google.calendar.redirect-uris}")
@@ -37,25 +43,49 @@ public class GoogleCalendarService {
         this.objectMapper = objectMapper;
     }
 
-    public String getAuthUrl() throws Exception {
+    public String getAuthUrl() {
         return googleAuthorizationCodeFlow.newAuthorizationUrl()
                 .setRedirectUri(redirectUri)
                 .build();
     }
 
-    public Credential exchangeCodeForCredential(String code) throws Exception {
-        GoogleTokenResponse response = googleAuthorizationCodeFlow.newTokenRequest(code)
-                .setRedirectUri(redirectUri)
-                .execute();
-        Credential userCredential = googleAuthorizationCodeFlow.createAndStoreCredential(response, "user");
-        this.credential = userCredential;
-        return userCredential;
+    public Credential exchangeCodeForCredential(String code, String userId){
+       try{
+           GoogleTokenResponse response = googleAuthorizationCodeFlow.newTokenRequest(code)
+                   .setRedirectUri(redirectUri)
+                   .execute();
+           Credential userCredential = googleAuthorizationCodeFlow.createAndStoreCredential(response, userId);
+           userCredentials.put(userId, userCredential);
+           //log.info("Credential stored, current credentials map: {}", userCredentials.keySet());  // 저장된 credential 확인
+           return userCredential;
+       }catch (Exception e){
+           log.error("Failed to exchange code for credential: {}", e.getMessage(), e);
+           throw new GoogleCalendarException.AuthenticationException();
+       }
+
     }
 
     private void ensureCredentialIsSet() {
-        if (credential == null) {
-            throw new IllegalStateException("Credential is not set. Please authenticate first.");
+        try{
+            String userId = getCurrentUserId();
+            Credential storedCredential = userCredentials.get(userId);
+
+            if (storedCredential == null) {
+                log.warn("Credential not found for user: {}", userId);
+                throw new GoogleCalendarException.AuthenticationException();
+            }
+            this.credential = storedCredential;
+        } catch (Exception e) {
+            log.warn("Authentication check failed: {}", e.getMessage());
+            throw new GoogleCalendarException.AuthenticationException();
         }
+    }
+
+    private String getCurrentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userId = auth.getPrincipal().toString();
+        //log.info("Current user ID: {}", userId);
+        return userId;
     }
 
     public String getGoogleCalendarEvents() throws Exception {
