@@ -1,5 +1,6 @@
 package com.saltyhana.saltyhanaserver.controller;
 
+import com.saltyhana.saltyhanaserver.dto.GoalMessageDTO;
 import com.saltyhana.saltyhanaserver.dto.GoalResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.SetGoalDTO;
 import com.saltyhana.saltyhanaserver.service.GoalService;
@@ -7,6 +8,8 @@ import com.saltyhana.saltyhanaserver.service.GoalService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,5 +39,17 @@ public class GoalController {
     public ResponseEntity<SetGoalDTO> updateGoal(
             @PathVariable Long goalId, @RequestBody SetGoalDTO goalDTO) {
         return ResponseEntity.ok(goalService.createOrUpdateGoal(goalDTO, goalId));
+    }
+
+    @Operation(summary = "만료된 목표 리스트 조회")
+    @GetMapping("/end")
+    public ResponseEntity<List<GoalMessageDTO>> getCompleteGoals() {
+        Long userId = getUserId();
+        return ResponseEntity.ok(goalService.getGoalMessages(userId));
+    }
+
+    private Long getUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (Long) auth.getPrincipal();
     }
 }

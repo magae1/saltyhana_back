@@ -1,6 +1,7 @@
 package com.saltyhana.saltyhanaserver.service;
 
 import com.saltyhana.saltyhanaserver.dto.AccountDTO;
+import com.saltyhana.saltyhanaserver.dto.GoalMessageDTO;
 import com.saltyhana.saltyhanaserver.dto.GoalResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.SetGoalDTO;
 import com.saltyhana.saltyhanaserver.entity.Account;
@@ -28,11 +29,13 @@ import java.util.stream.Collectors;
 
 import static com.saltyhana.saltyhanaserver.mapper.GoalMapper.toGoalResponseDTO;
 
+
 @Service
 @RequiredArgsConstructor
 public class GoalService {
     private final S3FileUploadService s3FileUploadService;
     private final FileService fileService;
+    private final GoalMessageQueueService goalMessageQueueService;
     private final GoalRepository goalRepository;
     private final UserRepository userRepository;
     private final IconRepository iconRepository;
@@ -143,5 +146,10 @@ public class GoalService {
         return goals.stream()
                 .map(goal -> toGoalResponseDTO(goal, user))
                 .collect(Collectors.toList());
+    }
+
+    public List<GoalMessageDTO> getGoalMessages(Long userId) {
+        String keyName = Long.toString(userId);
+        return goalMessageQueueService.popAllMessages(keyName);
     }
 }

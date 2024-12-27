@@ -30,7 +30,6 @@ public class DashboardService {
     private final TransferRepository transferRepository;
     private final ProductRepository productRepository;
     private final RateRepository rateRepository;
-    private final GoalAchievementRepository goalAchievementRepository;
 
     public List<DashBoardResponseDTO> getGoalsAndWeekdays() {
         // 인증 확인
@@ -220,64 +219,5 @@ public class DashboardService {
                             .build();
                 })
                 .collect(Collectors.toList());
-    }
-
-
-    public List<GoalAchievementDTO> getUncheckedAchievements() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = Long.parseLong(auth.getPrincipal().toString());
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("사용자"));
-
-        List<GoalSummaryResponseDTO> goals = getGoals(user);
-
-        return goals.stream()
-                .filter(goal -> {
-                    GoalAchievement achievement = goalAchievementRepository.findById(goal.getId()).orElse(null);
-                    return achievement == null || !achievement.isChecked();   // Redis에 없거나 `checked`가 false인 목표만
-                })
-                .map(goal -> {
-                    Optional<GoalAchievement> achievement = goalAchievementRepository.findById(goal.getId());
-                    if (!achievement.isPresent()) {
-                        Long dailyAmount = progressRepository.findByGoalId(goal.getId()).get().getAfterAmount();
-                        Long percentage = calculatePercentage(dailyAmount, goal.getTotalMoney());
-                        boolean achieved = percentage == 100L;
-
-                        goalAchievementRepository.save(
-                                GoalAchievement.builder()
-                                        .id(goal.getId())
-                                        .achieved(achieved)
-                                        .checked(false) // 초기값
-                                        .build()
-                        );
-                        return new GoalAchievement(goal.getId(), achieved, false); // 새로 생성된 목표 리턴
-                    }
-                    return achievement.get();
-                })
-                .filter(Objects::nonNull) // null 값 제외
-                .map(this::toDTO)         // GoalAchievement를 GoalAchievementDTO로 변환
-                .collect(Collectors.toList());
-    }
-
-    public void confirmAchievements(List<Long> goalIds) {
-        goalIds.forEach(goalId -> {
-            // Redis에서 목표 조회
-            Optional<GoalAchievement> achievementOpt = goalAchievementRepository.findById(goalId);
-
-            // 목표가 Redis에 존재하면 확인 상태 업데이트
-            if (achievementOpt.isPresent()) {
-                GoalAchievement achievement = achievementOpt.get();
-                if (!achievement.isChecked()) {
-                    achievement.setChecked(true); // 확인 상태를 true로 업데이트
-                    goalAchievementRepository.save(achievement); // 업데이트된 목표 저장
-                }
-            }
-        });
-    }
-
-    private GoalAchievementDTO toDTO(GoalAchievement achievement) {
-        return GoalAchievementDTO.builder()
-                .id(achievement.getId())
-                .achieved(achievement.isAchieved())
-                .build();
     }
 }
