@@ -93,6 +93,7 @@ public class DashboardService {
     protected GoalSummaryResponseDTO GoalToGoalSummaryResponseDTO(Goal goal, User user) {
 
         String iconImage = null;
+        Boolean isEnded = false;
         Icon icon = goal.getIcon();
 
         if (icon != null) {
@@ -101,9 +102,15 @@ public class DashboardService {
 
         // Progress 처리
         initializeProgress(goal);
+
         Long dailyAmount = progressRepository.findByGoalId(goal.getId()).get().getAfterAmount();
         Long percentage = calculatePercentage(dailyAmount, goal.getAmount());
         String goalPeriod = formatGoalPeriod(goal.getStartAt(), goal.getEndAt());
+
+        if(dailyAmount >= goal.getAmount()) {
+            isEnded = true;
+            goalRepository.updateIsEnded(goal.getId(), true);
+        }
 
         return GoalSummaryResponseDTO.builder()
                 .id(goal.getId())
@@ -115,6 +122,7 @@ public class DashboardService {
                 .currentMoney(dailyAmount)
                 .totalMoney(goal.getAmount())
                 .percentage(percentage)
+                .isEnded(isEnded)
                 .build();
     }
 
@@ -134,7 +142,8 @@ public class DashboardService {
                             .afterAmount(0L)
                             .addedAt(goal.getStartAt())
                             .build();
-                    return progressRepository.save(initialProgress);
+                    progressRepository.save(initialProgress); // 저장
+                    return initialProgress; // 저장한 객체 반환
                 });
 
         Long accumulatedAmount = progress.getAfterAmount();

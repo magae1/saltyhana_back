@@ -2,7 +2,9 @@ package com.saltyhana.saltyhanaserver.repository;
 
 import com.saltyhana.saltyhanaserver.entity.Goal;
 import com.saltyhana.saltyhanaserver.entity.User;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,4 +24,9 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
         AND g.endAt >= CURRENT_DATE
     """)
     List<Goal> findAllByUserWithIcons(@Param("user") User user);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Goal g SET g.isEnded = :isEnded WHERE g.id = :id")
+    void updateIsEnded(@Param("id") Long id, @Param("isEnded") boolean isEnded);
 }

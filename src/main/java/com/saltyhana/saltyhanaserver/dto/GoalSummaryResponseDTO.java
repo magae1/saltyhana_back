@@ -15,4 +15,5 @@ public class GoalSummaryResponseDTO {
     private Long currentMoney;
     private Long totalMoney;
     private Long percentage;
+    private boolean isEnded;
 }
