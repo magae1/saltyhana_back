@@ -38,9 +38,13 @@ public class RecommendationMapper {
                         .build())
                 .collect(Collectors.toList());
     }
-
-
-    public static List<RecommendResponseDTO> toTendencyDTOList(List<Product> products, String tendency, Map<Long, Rate> rateMap, String userName) {
+    public static List<RecommendResponseDTO> toTendencyDTOList(
+            List<Product> products,
+            String tendency,
+            Map<Long, Rate> rateMap,
+            String userName,
+            String reason // String 타입으로 수정
+    ) {
         return products.stream()
                 .map(product -> RecommendResponseDTO.builder()
                         .type(ProductEnum.TENDENCY)
@@ -48,12 +52,16 @@ public class RecommendationMapper {
                         .subTitle(product.getSpclCnd())
                         .imageUrl("https://example.com/image/" + product.getId())
                         .description(formatDescription(rateMap.get(product.getId())))
-                        .name(userName) // 사용자 이름 설정
+                        .name(userName)
                         .tendency(tendency)
+                        .reason(reason) // 단일 이유를 사용
                         .link(product.getLinkPrd())
                         .build())
                 .collect(Collectors.toList());
     }
+
+
+
 }
 
 
