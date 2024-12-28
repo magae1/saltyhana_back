@@ -19,4 +19,10 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     List<AccountDTO> findAllByUserId(@Param("userId") Long userId);
 
     Optional<Account> findById(Long id);
+
+    @Query("SELECT a "
+        + "FROM Account a "
+        + "WHERE a.id IN :idList "
+        + "ORDER BY a.id")
+    List<Account> findByIds(List<Long> idList);
 }

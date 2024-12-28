@@ -1,37 +1,41 @@
 package com.saltyhana.saltyhanaserver.service;
 
 import com.saltyhana.saltyhanaserver.dto.TransferDTO;
+import com.saltyhana.saltyhanaserver.dto.form.TransferForm;
+import com.saltyhana.saltyhanaserver.entity.Account;
+import com.saltyhana.saltyhanaserver.entity.Transfer;
+import com.saltyhana.saltyhanaserver.exception.BadRequestException;
+import com.saltyhana.saltyhanaserver.mapper.TransferMapper;
+import com.saltyhana.saltyhanaserver.repository.AccountRepository;
 import com.saltyhana.saltyhanaserver.entity.Goal;
 import com.saltyhana.saltyhanaserver.entity.Transfer;
 import com.saltyhana.saltyhanaserver.repository.GoalRepository;
 import com.saltyhana.saltyhanaserver.repository.TransferRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.saltyhana.saltyhanaserver.util.DashboardUtil.calculateDailyAmount;
 import static com.saltyhana.saltyhanaserver.util.StringFormatter.toLocalDateTime;
 
+
+@Log4j2
 @Service
+@RequiredArgsConstructor
 public class TransferService {
-    @Autowired
+
     private final TransferRepository transferRepository;
-    @Autowired
-    private final GoalRepository goalRepository;
-    @Autowired
-    private ProgressService progressService;
+    private final AccountRepository accountRepository;
 
-
-    @Autowired
-    public TransferService(TransferRepository transferRepository, GoalRepository goalRepository) {
-        this.transferRepository = transferRepository;
-        this.goalRepository = goalRepository;
-    }
 
     public List<TransferDTO> getDailyTransactions(Long accountId, LocalDate startDate,
                                                   LocalDate endDate) {
@@ -84,6 +88,33 @@ public class TransferService {
 
         return transferList;
     }
+
+    public void bulkInsertTransfers(List<TransferForm> transferFormList)
+        throws ResponseStatusException {
+        List<Long> accountIdList = transferFormList
+            .stream()
+            .map(TransferForm::getAccountId).distinct()
+            .toList();
+
+        Map<Long, Account> accountMap = accountRepository.findByIds(accountIdList)
+            .stream()
+            .collect(Collectors.toMap(Account::getId, a -> a));
+
+        List<Transfer> transferList = transferFormList
+            .stream()
+            .map(t -> {
+                Account account = accountMap.get(t.getAccountId());
+                return TransferMapper.toEntity(t, account);
+            })
+            .toList();
+        try {
+            transferRepository.saveAll(transferList);
+        } catch (Exception e) {
+            log.error(e);
+            throw new BadRequestException();
+        }
+    }
+}
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void checkTransfer(Transfer transfer) {
