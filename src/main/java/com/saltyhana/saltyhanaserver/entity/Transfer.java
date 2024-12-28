@@ -1,12 +1,8 @@
 package com.saltyhana.saltyhanaserver.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import com.saltyhana.saltyhanaserver.listener.GoalEntityListener;
+import com.saltyhana.saltyhanaserver.listener.TransferEntityListener;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +16,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners(TransferEntityListener.class)
 @Getter
 @ToString
 @Builder
@@ -27,6 +24,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Transfer {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -49,4 +47,7 @@ public class Transfer {
 
     @Column(length = 20)
     private String branchName;
+
+
+
 }

@@ -65,7 +65,7 @@ public class GoalEntityListener {
   //목표 생성 시 progress 초기값 자동으로 insert
   @PostPersist
   public void afterGoalPersist(Goal goal) {
-    log.info("afterGoalPersist 호출됨: {}", goal.getId());
+    log.info("afterGoalPersist 호출: {}", goal.getId());
     progressService.initializeProgress(goal);
   }
 

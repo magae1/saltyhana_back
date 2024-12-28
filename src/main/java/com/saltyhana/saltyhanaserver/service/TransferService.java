@@ -1,36 +1,48 @@
 package com.saltyhana.saltyhanaserver.service;
 
 import com.saltyhana.saltyhanaserver.dto.TransferDTO;
+import com.saltyhana.saltyhanaserver.entity.Goal;
+import com.saltyhana.saltyhanaserver.entity.Transfer;
+import com.saltyhana.saltyhanaserver.repository.GoalRepository;
 import com.saltyhana.saltyhanaserver.repository.TransferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.saltyhana.saltyhanaserver.util.DashboardUtil.calculateDailyAmount;
 import static com.saltyhana.saltyhanaserver.util.StringFormatter.toLocalDateTime;
 
 @Service
 public class TransferService {
     @Autowired
     private final TransferRepository transferRepository;
+    @Autowired
+    private final GoalRepository goalRepository;
+    @Autowired
+    private ProgressService progressService;
+
 
     @Autowired
-    public TransferService(TransferRepository transferRepository) {
+    public TransferService(TransferRepository transferRepository, GoalRepository goalRepository) {
         this.transferRepository = transferRepository;
+        this.goalRepository = goalRepository;
     }
 
     public List<TransferDTO> getDailyTransactions(Long accountId, LocalDate startDate,
-        LocalDate endDate) {
+                                                  LocalDate endDate) {
         List<LocalDateTime> datetimes = toLocalDateTime(startDate, endDate);
         LocalDateTime startDateTime = datetimes.get(0);
         LocalDateTime endDateTime = datetimes.get(1);
         // 일일 거래 내역과 일일 잔액을 가져온다
         List<Object[]> dailyTransactions = transferRepository.findDailyTransactions(accountId,
-            startDateTime, endDateTime);
+                startDateTime, endDateTime);
         List<Object[]> dailyBalance = transferRepository.findDailyBalance(accountId, startDateTime,
-            endDateTime);
+                endDateTime);
 
         // 날짜별로 입금, 출금, 잔액을 기록하기 위한 맵
         Map<String, Long> totalDepositMap = new HashMap<>();
@@ -71,5 +83,24 @@ public class TransferService {
         transferList.sort(Comparator.comparing(TransferDTO::getDate));
 
         return transferList;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void checkTransfer(Transfer transfer) {
+        if (transfer.getInOutType() == 0) {
+
+            String printedContent = transfer.getPrintedContent();
+
+            Goal goal = goalRepository.findByName(printedContent).orElse(null);
+
+             //하루에 이체되어야 하는 금액
+            LocalDateTime startAt = goal.getStartAt();
+            LocalDateTime endAt = goal.getEndAt();
+            Integer dailyAmount = calculateDailyAmount(startAt, endAt, goal.getAmount());
+
+            if(dailyAmount.equals(transfer.getTranAmt()))
+                progressService.insertProgress(goal, dailyAmount, transfer.getTranTime());
+
+        }
     }
 }

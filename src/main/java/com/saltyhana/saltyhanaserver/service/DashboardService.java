@@ -31,6 +31,7 @@ public class DashboardService {
     private final ProductRepository productRepository;
     private final RateRepository rateRepository;
     private final ProgressService progressService;
+    private final WeekdayCalendarService weekdayCalendarService;
 
     public List<DashBoardResponseDTO> getGoalsAndWeekdays() {
         // 인증 확인
@@ -56,10 +57,9 @@ public class DashboardService {
             return dashboardList;
         }
 
-
         List<DashBoardResponseDTO> dashboardList = goals.stream()
                 .map(goal -> {
-                    WeekdayCalendarResponseDTO weekdayCalendar = getWeekdayCalendar(goal);
+                    WeekdayCalendarResponseDTO weekdayCalendar = weekdayCalendarService.getWeekdayCalendar(goal.getTitle());
                     List<BestProductListResponseDTO> bestProductList = getBestProductList();
                     return DashBoardResponseDTO.builder()
                             .goal(goal)
@@ -98,8 +98,6 @@ public class DashboardService {
             iconImage = icon.getIconImage();
         }
 
-        // Progress 처리
-        progressService.insertProgress(goal);
         Long dailyAmount = progressRepository.findRecentProgressByGoalId(goal.getId()).get().getAfterAmount();
         Long percentage = calculatePercentage(dailyAmount, goal.getAmount());
         String goalPeriod = formatGoalPeriod(goal.getStartAt(), goal.getEndAt());
@@ -122,31 +120,6 @@ public class DashboardService {
                 .isEnded(isEnded)
                 .build();
     }
-
-    private WeekdayCalendarResponseDTO getWeekdayCalendar(GoalSummaryResponseDTO goalDTO){
-
-        Goal goal = goalRepository.findById(goalDTO.getId()).orElse(null);
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime elevenDaysAgo = now.minusDays(11);
-
-        //하루에 이체되어야 하는 금액
-        Integer dailyAmount = calculateDailyAmount(goal.getStartAt(),goal.getEndAt(),goalDTO.getTotalMoney());
-        List<Transfer> transfers = transferRepository.findTransfersByAccountAndDateRange(elevenDaysAgo, now, goal.getName());
-        List <WeekDayType> weekDayTypes = new ArrayList<>();
-
-        for(LocalDateTime date = elevenDaysAgo.plusDays(1); !date.isAfter(now); date = date.plusDays(1)) {
-            boolean isAchieved = checkIfAchieved(transfers, dailyAmount, date);
-            weekDayTypes.add(WeekDayType.builder()
-                    .date(date.toLocalDate())
-                    .isAchieve(isAchieved)
-                    .build());
-        }
-
-        return WeekdayCalendarResponseDTO.builder()
-                .weekday(weekDayTypes)
-                .build();
-    }
-
 
     private List<BestProductListResponseDTO> getBestProductList() {
 
