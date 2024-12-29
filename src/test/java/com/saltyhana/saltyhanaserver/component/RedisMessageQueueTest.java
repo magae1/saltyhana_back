@@ -18,7 +18,7 @@ public class RedisMessageQueueTest {
   @Autowired
   private RedisMessageQueue<GoalMessageDTO> redisMessageQueue;
 
-
+  //  @Test
   public void testPushMessage() {
     String keyName = "1";
     redisMessageQueue.pushMessage(keyName, GoalMessageDTO.builder()
@@ -30,6 +30,7 @@ public class RedisMessageQueueTest {
         .build());
   }
 
+  //  @Test
   public void testPopAllMessages() {
     String keyName = "1";
     List<GoalMessageDTO> messages = redisMessageQueue.popAllMessages(keyName);

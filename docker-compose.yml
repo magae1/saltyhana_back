@@ -9,15 +9,36 @@ services:
       - default_net
   server:
     build: .
-    ports:
-      - '80:9090'
     expose:
-      - '80'
+      - ${SERVER_PORT}
     networks:
       - default_net
     depends_on:
       - cache
-
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    networks:
+      - default_net
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+  nginx:
+    build: ./nginx
+    env_file:
+      - .env
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+      - certbot
 networks:
   default_net:
     driver: bridge
+
+volumes:
+  static_volume: { }
