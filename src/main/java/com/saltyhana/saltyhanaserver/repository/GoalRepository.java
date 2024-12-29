@@ -9,12 +9,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface GoalRepository extends JpaRepository<Goal, Long> {
     List<Goal> findByUser(User user);
     List<Goal> findByUserAndIsEndedFalse(User user);
     List<Goal> findByUserId(Long userId);
+    Optional<Goal> findByName(String name);
 
     @Query("""
         SELECT g
@@ -29,4 +31,11 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     @Transactional
     @Query("UPDATE Goal g SET g.isEnded = :isEnded WHERE g.id = :id")
     void updateIsEnded(@Param("id") Long id, @Param("isEnded") boolean isEnded);
+
+    @Query("""
+    SELECT g.id
+    FROM Goal g
+    WHERE g.name = :goalName
+    """)
+    Long findIdByName(String goalName);
 }

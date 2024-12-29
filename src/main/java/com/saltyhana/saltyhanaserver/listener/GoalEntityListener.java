@@ -3,13 +3,22 @@ package com.saltyhana.saltyhanaserver.listener;
 
 import com.saltyhana.saltyhanaserver.dto.GoalMessageDTO;
 import com.saltyhana.saltyhanaserver.entity.Icon;
+import com.saltyhana.saltyhanaserver.entity.Progress;
+//import com.saltyhana.saltyhanaserver.event.GoalPersistedEvent;
+import com.saltyhana.saltyhanaserver.repository.ProgressRepository;
+import com.saltyhana.saltyhanaserver.service.ProgressService;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostUpdate;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import com.saltyhana.saltyhanaserver.service.GoalMessageQueueService;
 import com.saltyhana.saltyhanaserver.entity.Goal;
+
+import java.time.LocalDateTime;
 
 
 @Component
@@ -18,6 +27,8 @@ public class GoalEntityListener {
 
   @Autowired
   private GoalMessageQueueService goalMessageQueueService;
+
+  private static ProgressService progressService;
 
   @PostUpdate
   public void onPostUpdate(Goal goal) {
@@ -45,4 +56,17 @@ public class GoalEntityListener {
     log.debug("key: {}, DTO: {}", keyName, goalMessageDTO);
     goalMessageQueueService.pushMessage(keyName, goalMessageDTO);
   }
+
+  @Deprecated
+  public void setProgressService(ProgressService progressService) {
+    this.progressService = progressService;
+  }
+
+  //목표 생성 시 progress 초기값 자동으로 insert
+  @PostPersist
+  public void afterGoalPersist(Goal goal) {
+    log.info("afterGoalPersist 호출: {}", goal.getId());
+    progressService.initializeProgress(goal);
+  }
+
 }

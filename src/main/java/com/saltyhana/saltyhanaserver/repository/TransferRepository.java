@@ -41,13 +41,13 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
         FROM Transfer t 
         WHERE t.tranTime >= :startAt 
         AND t.tranTime <= :endAt 
-        AND t.account.id = :connectedAccountId 
+        AND t.printedContent = :goalName 
         AND t.inOutType = 0
     """)
     List<Transfer> findTransfersByAccountAndDateRange(
             @Param("startAt") LocalDateTime startAt,
             @Param("endAt") LocalDateTime endAt,
-            @Param("connectedAccountId") Long id);
+            @Param("goalName") String goalName);
 
 
     @Query("""
@@ -55,13 +55,13 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
         FROM Transfer t 
         WHERE t.tranTime >= :startAt 
         AND t.tranTime <= :endAt 
-        AND t.account.id = :connectedAccountId 
+        AND t.printedContent = :goalName 
         AND t.inOutType = 0
         AND t.tranAmt = :dailyAmount
     """)
     List<Transfer> findTransfersByGoalAndDate(
             @Param("startAt") LocalDateTime startAt,
             @Param("endAt") LocalDateTime endAt,
-            @Param("connectedAccountId") Long id,
+            @Param("goalName") String goalName,
             @Param("dailyAmount") Integer dailyAmount);
 }
