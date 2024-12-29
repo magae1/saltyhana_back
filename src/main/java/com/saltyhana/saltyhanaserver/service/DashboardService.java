@@ -2,19 +2,14 @@ package com.saltyhana.saltyhanaserver.service;
 
 import com.saltyhana.saltyhanaserver.dto.*;
 import com.saltyhana.saltyhanaserver.entity.*;
-import com.saltyhana.saltyhanaserver.enums.ProductEnum;
 import com.saltyhana.saltyhanaserver.exception.NotFoundException;
-import com.saltyhana.saltyhanaserver.mapper.RecommendationMapper;
 import com.saltyhana.saltyhanaserver.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,10 +22,7 @@ public class DashboardService {
     private final GoalRepository goalRepository;
     private final ProgressRepository progressRepository;
     private final UserRepository userRepository;
-    private final TransferRepository transferRepository;
-    private final ProductRepository productRepository;
-    private final RateRepository rateRepository;
-    private final ProgressService progressService;
+    private final RecommendationService recommendationService;
     private final WeekdayCalendarService weekdayCalendarService;
 
     public List<DashBoardResponseDTO> getGoalsAndWeekdays() {
@@ -42,12 +34,12 @@ public class DashboardService {
             throw new NotFoundException("사용자");
         });
 
-        List<GoalSummaryResponseDTO> goals = getGoals(user);
+        List<GoalSummaryResponseDTO> goals = getGoalSummarys(user);
 
         // 목표가 없을 경우 예외 처리
         if (goals == null || goals.isEmpty()) {
             List<DashBoardResponseDTO> dashboardList = new ArrayList<>();
-            List<BestProductListResponseDTO> bestProductList = getBestProductList();
+            List<BestProductListResponseDTO> bestProductList = recommendationService.getBestProductList();
             dashboardList.add(DashBoardResponseDTO.builder()
                     .goal(null)
                     .weekdayCalendar(null)
@@ -60,7 +52,7 @@ public class DashboardService {
         List<DashBoardResponseDTO> dashboardList = goals.stream()
                 .map(goal -> {
                     WeekdayCalendarResponseDTO weekdayCalendar = weekdayCalendarService.getWeekdayCalendar(goal.getTitle());
-                    List<BestProductListResponseDTO> bestProductList = getBestProductList();
+                    List<BestProductListResponseDTO> bestProductList = recommendationService.getBestProductList();
                     return DashBoardResponseDTO.builder()
                             .goal(goal)
                             .weekdayCalendar(weekdayCalendar)
@@ -73,7 +65,7 @@ public class DashboardService {
     }
 
     @Transactional
-    protected List<GoalSummaryResponseDTO> getGoals(User user) {
+    protected List<GoalSummaryResponseDTO> getGoalSummarys(User user) {
         // Fetch Join
         List<Goal> goals = goalRepository.findAllByUserWithIcons(user);
 
@@ -119,32 +111,5 @@ public class DashboardService {
                 .percentage(percentage)
                 .isEnded(isEnded)
                 .build();
-    }
-
-    private List<BestProductListResponseDTO> getBestProductList() {
-
-        Pageable pageable = PageRequest.of(0, 5);
-        List<Product> bestProductList = productRepository.findBestProductList(pageable);
-
-        // 추천 상품이 없을 경우 예외 처리
-        if (bestProductList == null || bestProductList.isEmpty()) {
-            throw new NotFoundException("추천상품");
-        }
-
-        return bestProductList.stream()
-                .map(product -> {
-                    Rate rate = rateRepository.findByProductId(product.getId());
-
-                    return BestProductListResponseDTO.builder()
-                            .id(product.getId())
-                            .type(ProductEnum.ASSET)
-                            .title(product.getFinPrdtNm())
-                            .subtitle(product.getSpclCnd())
-                            .imageUrl("https://example.com/image/" + product.getId())
-                            .description(RecommendationMapper.formatDescription(rate))
-                            .productLink(product.getLinkPrd())
-                            .build();
-                })
-                .collect(Collectors.toList());
     }
 }

@@ -1,16 +1,22 @@
 package com.saltyhana.saltyhanaserver.service;
 
+import com.saltyhana.saltyhanaserver.dto.BestProductListResponseDTO;
 import com.saltyhana.saltyhanaserver.dto.RecommendResponseDTO;
 import com.saltyhana.saltyhanaserver.entity.ConsumptionTendency;
 import com.saltyhana.saltyhanaserver.entity.Product;
 import com.saltyhana.saltyhanaserver.entity.Rate;
 import com.saltyhana.saltyhanaserver.entity.User;
+import com.saltyhana.saltyhanaserver.enums.ProductEnum;
 import com.saltyhana.saltyhanaserver.exception.BadRequestException;
+import com.saltyhana.saltyhanaserver.exception.NotFoundException;
 import com.saltyhana.saltyhanaserver.mapper.RecommendationMapper;
 import com.saltyhana.saltyhanaserver.repository.ProductRepository;
+import com.saltyhana.saltyhanaserver.repository.RateRepository;
 import com.saltyhana.saltyhanaserver.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,6 +36,7 @@ public class RecommendationService {
     private final ProductRepository productRepository;
     private final AnthropicService anthropicService;
     private final RestTemplate restTemplate;
+    private final RateRepository rateRepository;
 
     public List<RecommendResponseDTO> getRecommendations(Long userId)
         throws ResponseStatusException {
@@ -99,6 +106,34 @@ public class RecommendationService {
                         rate -> rate.getProduct().getId(),
                         rate -> rate
                 ));
+    }
+
+    //대시보드에 제공할 기본추천 상품
+    protected List<BestProductListResponseDTO> getBestProductList() {
+
+        Pageable pageable = PageRequest.of(0, 5);
+        List<Product> bestProductList = productRepository.findBestProductList(pageable);
+
+        // 추천 상품이 없을 경우 예외 처리
+        if (bestProductList == null || bestProductList.isEmpty()) {
+            throw new NotFoundException("추천상품");
+        }
+
+        return bestProductList.stream()
+                .map(product -> {
+                    Rate rate = rateRepository.findByProductId(product.getId());
+
+                    return BestProductListResponseDTO.builder()
+                            .id(product.getId())
+                            .type(ProductEnum.ASSET)
+                            .title(product.getFinPrdtNm())
+                            .subtitle(product.getSpclCnd())
+                            .imageUrl("https://example.com/image/" + product.getId())
+                            .description(RecommendationMapper.formatDescription(rate))
+                            .productLink(product.getLinkPrd())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }
 

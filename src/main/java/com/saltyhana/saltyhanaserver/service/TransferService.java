@@ -118,10 +118,9 @@ public class TransferService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void checkTransfer(Transfer transfer) {
+
         if (transfer.getInOutType() == 0) {
-
             String printedContent = transfer.getPrintedContent();
-
             Goal goal = goalRepository.findByName(printedContent).orElse(null);
 
             //하루에 이체되어야 하는 금액
@@ -132,7 +131,6 @@ public class TransferService {
             if (dailyAmount.equals(transfer.getTranAmt())) {
                 progressService.insertProgress(goal, dailyAmount, transfer.getTranTime());
             }
-
         }
     }
 }

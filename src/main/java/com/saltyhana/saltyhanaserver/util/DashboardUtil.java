@@ -14,17 +14,6 @@ public class DashboardUtil {
         return (int)Math.round(goalAmount / totalDays);
     }
 
-    public static boolean checkIfAchieved(List<Transfer> transfers, Integer dailyAmount, LocalDateTime date) {
-        LocalDate localDate = date.toLocalDate();
-        for (Transfer t : transfers) {
-            LocalDate transTimeLocalDate = t.getTranTime().toLocalDate();
-            if (transTimeLocalDate.equals(localDate) && t.getTranAmt().equals(dailyAmount)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static Long calculatePercentage(Long dailyAmount, Long goalAmount){
         return Math.round((double) dailyAmount / goalAmount * 100);
     }

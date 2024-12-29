@@ -3,24 +3,15 @@ package com.saltyhana.saltyhanaserver.listener;
 
 import com.saltyhana.saltyhanaserver.dto.GoalMessageDTO;
 import com.saltyhana.saltyhanaserver.entity.Icon;
-import com.saltyhana.saltyhanaserver.entity.Progress;
-//import com.saltyhana.saltyhanaserver.event.GoalPersistedEvent;
-import com.saltyhana.saltyhanaserver.repository.ProgressRepository;
 import com.saltyhana.saltyhanaserver.service.ProgressService;
-import jakarta.annotation.PostConstruct;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostUpdate;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import com.saltyhana.saltyhanaserver.dto.GoalMessageDTO;
-import com.saltyhana.saltyhanaserver.entity.Icon;
 import com.saltyhana.saltyhanaserver.entity.Goal;
 import com.saltyhana.saltyhanaserver.component.RedisMessageQueue;
-
-import java.time.LocalDateTime;
 
 
 @Component
