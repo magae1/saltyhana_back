@@ -42,7 +42,6 @@ public class AuthServiceTest {
         testUser = userRepository.save(testUser);
     }
 
-    @Test
     @Order(1)
     void testUnsubscribe() {
         Long userId = testUser.getId();

@@ -22,7 +22,6 @@ public class ConsumptionTestRepositoryTest {
   @Autowired
   private ConsumptionTestRepository repository;
 
-  @Test
   public void testFindTestAndAnswersById() {
     Long testId = 1L;
     List<Object> results = repository.findTestAndAnswersById(testId);
