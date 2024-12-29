@@ -21,15 +21,32 @@ class TransferRepositoryTest {
     private TransferRepository transferRepository;
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private GoalRepository goalRepository;
+    @Autowired
+    private UserRepository userRepository;
+
     @PersistenceContext
     private EntityManager entityManager;
 
 
-    @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED) // 트랜잭션 롤백 방지
     void testSaveTransfer() {
 
-        Account account = accountRepository.findById(5L).orElse(null);
+        User user = userRepository.findById(1L).get();
+        Account account = accountRepository.findById(1L).orElse(null);
+
+        goalRepository
+            .save(Goal.builder()
+                .user(user)
+                .account(account)
+                .name("트래블로그 적금")
+                .category("123")
+                .amount(100L)
+                .startAt(LocalDateTime.now())
+                .endAt(LocalDateTime.now().plusDays(10))
+                .build());
+
         log.info("--로그 확인1--"+account.getId());
         Transfer transfer = Transfer.builder()
                 .account(account)
@@ -46,6 +63,7 @@ class TransferRepositoryTest {
             transferRepository.save(transfer);
             transferRepository.flush();
         }catch(Exception e){
+            log.error(e);
             entityManager.clear();
         }
     }

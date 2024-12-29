@@ -8,7 +8,6 @@ import com.saltyhana.saltyhanaserver.exception.BadRequestException;
 import com.saltyhana.saltyhanaserver.mapper.TransferMapper;
 import com.saltyhana.saltyhanaserver.repository.AccountRepository;
 import com.saltyhana.saltyhanaserver.entity.Goal;
-import com.saltyhana.saltyhanaserver.entity.Transfer;
 import com.saltyhana.saltyhanaserver.repository.GoalRepository;
 import com.saltyhana.saltyhanaserver.repository.TransferRepository;
 
@@ -35,6 +34,8 @@ public class TransferService {
 
     private final TransferRepository transferRepository;
     private final AccountRepository accountRepository;
+    private final GoalRepository goalRepository;
+    private final ProgressService progressService;
 
 
     public List<TransferDTO> getDailyTransactions(Long accountId, LocalDate startDate,
@@ -114,7 +115,6 @@ public class TransferService {
             throw new BadRequestException();
         }
     }
-}
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void checkTransfer(Transfer transfer) {
@@ -124,13 +124,14 @@ public class TransferService {
 
             Goal goal = goalRepository.findByName(printedContent).orElse(null);
 
-             //하루에 이체되어야 하는 금액
+            //하루에 이체되어야 하는 금액
             LocalDateTime startAt = goal.getStartAt();
             LocalDateTime endAt = goal.getEndAt();
             Integer dailyAmount = calculateDailyAmount(startAt, endAt, goal.getAmount());
 
-            if(dailyAmount.equals(transfer.getTranAmt()))
+            if (dailyAmount.equals(transfer.getTranAmt())) {
                 progressService.insertProgress(goal, dailyAmount, transfer.getTranTime());
+            }
 
         }
     }
